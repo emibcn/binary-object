@@ -1,8 +1,25 @@
 ![Coverage](https://raw.githubusercontent.com/emibcn/binary-object/badges/master/test-coverage.svg)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](code_of_conduct.md)
 
-# Binary Ojbect
+# Binary Object
 Manage binary data with strictly typed JavaScript Object-oriented programming.
+
+## Summary
+ - [Install](#install)
+ - [Usage](#usage)
+   - [First: polyfill if needed](#first-polyfill-if-needed)
+   - [Second: decorators or not](#second-decorators-or-not)
+   - [Examples](#examples)
+ -  [Memory owner](#memory-owner)
+ -  [Use cases](#use-cases)
+   - [WebAssembly](#webassembly)
+   - [Disable Garbage Collector (GC)](#disable-garbage-collector-gc)
+   - [Workers API](#workers-api)
+   - [Saving/restoring states](#savingrestoring-states)
+   - [Accessing binary data files](#accessing-binary-data-files)
+   - [Accessing binary APIs](#accessing-binary-apis)
+   - [Develop backend DB APIs](#develop-backend-db-apis)
+ -  [See also](#see-also)
 
 ## Install
 With `npm`:
@@ -17,7 +34,7 @@ yarn add binary-object
 
 ## Usage
 
-### First, polyfill if needed
+### First: polyfill if needed
 This library uses `TextEncoder` and `TextDecoder` to transform text to and from binary data. These are JavaScript native functions, but Node lacks them. You need to polyfill them first:
 ```javascript
 if(!('TextEncoder' in global)) {
@@ -254,3 +271,9 @@ stream based, you would preffer using `DataStreams.js` instead.
 
 ### Develop backend DB APIs
 Some libraries allows maintaining shared pieces of memory between the backend app and the database. This lib could help developing Node database middlewares.
+
+## See also
+There are several JS projects aiming to handle binary data:
+- [buffer-backed-object](https://github.com/GoogleChromeLabs/buffer-backed-object): creates objects that are backed by an ArrayBuffer
+- [@bnaya/objectbuffer](https://www.npmjs.com/package/@bnaya/objectbuffer) ([source code](https://github.com/Bnaya/objectbuffer/)): JavaScript Object like api, backed by an arraybuffer
+- [DataStream.js](https://github.com/kig/DataStream.js): library for reading data from ArrayBuffers
