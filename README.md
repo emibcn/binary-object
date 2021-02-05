@@ -1,5 +1,5 @@
 ![Coverage](https://raw.githubusercontent.com/emibcn/binary-object/badges/main/test-coverage.svg)
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](code_of_conduct.md)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
 
 # Binary Object
 Manage binary data with strictly typed JavaScript Object-oriented programming.
