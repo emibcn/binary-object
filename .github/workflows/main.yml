@@ -23,29 +23,29 @@ jobs:
       matrix:
         node: [14]
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node }}
+    - uses: actions/checkout@v1
+    - uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node }}
 
-      - name: Cache node modules
-        uses: actions/cache@v2
-        with:
-          path: |
-            node_modules
-            .yarn/cache
-          key: ${{ runner.OS }}-build-${{ hashFiles('**/yarn.lock') }}-${{ hashFiles('.github/workflows/*.yml') }}
-          restore-keys: |
-            ${{ runner.OS }}-build-${{ hashFiles('**/yarn.lock') }}
-            ${{ runner.OS }}-build
+    - name: Cache node modules
+      uses: actions/cache@v2
+      with:
+        path: |
+          node_modules
+          .yarn/cache
+        key: ${{ runner.OS }}-build-${{ hashFiles('**/yarn.lock') }}-${{ hashFiles('.github/workflows/*.yml') }}
+        restore-keys: |
+          ${{ runner.OS }}-build-${{ hashFiles('**/yarn.lock') }}
+          ${{ runner.OS }}-build
 
-      - name: yarn install
-        run: yarn --color --immutable
-        shell: bash
+    - name: yarn install
+      run: yarn --color --immutable
+      shell: bash
 
-      - name: test + coverage
-        run: yarn test-coverage --color || true
-        shell: bash
+    - name: test + coverage
+      run: yarn test-coverage --color || true
+      shell: bash
 
     # Coverage badges will be updated on any branch
     # and saved into a dedicated one
