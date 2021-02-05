@@ -6,6 +6,23 @@
   "module": "src/index.js",
   "repository": "git://github.com/emibcn/binary-object",
   "author": "github.com/emibcn",
+  "keywords": [
+    "ArrayBuffer",
+    "DataView",
+    "buffer",
+    "type",
+    "object",
+    "array",
+    "iterable",
+    "bytebuffer",
+    "binary",
+    "ObjectBuffer",
+    "BinaryObject"
+  ],
+  "homepage": "https://github.com/emibcn/binary-data",
+  "bugs": {
+    "url": "https://github.com/emibcn/binary-object/issues"
+  },
   "license": "GPL-3.0-or-later",
   "private": false,
   "scripts": {
