@@ -1,0 +1,153 @@
+name: General Validity
+
+on:
+  push:
+    branches: [ master ]
+    paths-ignore:
+      # Can we use '**.md' ?
+      - 'README.md'
+      - 'SECURITY.md'
+      - 'CODE_OF_CONDUCT.md'
+      - 'LICENSE'
+      - '.gitignore'
+      - '.npmignore'
+  pull_request:
+    branches: [ master ]
+
+
+jobs:
+
+  test:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        node: [14]
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        with:
+          path: |
+            node_modules
+            .yarn/cache
+          key: ${{ runner.OS }}-build-${{ hashFiles('**/yarn.lock') }}-${{ hashFiles('.github/workflows/*.yml') }}
+          restore-keys: |
+            ${{ runner.OS }}-build-${{ hashFiles('**/yarn.lock') }}
+            ${{ runner.OS }}-build
+
+      - name: yarn install
+        run: yarn --color --immutable
+        shell: bash
+
+      - name: test + coverage
+        run: yarn test-coverage --color || true
+        shell: bash
+
+    # Coverage badges will be updated on any branch
+    # and saved into a dedicated one
+    - name: Check test coverage
+      uses: johanvanhelden/gha-clover-test-coverage-check@v1
+      id: coverage
+      with:
+        percentage: 50
+        exit: 0
+        rounded-precision: 2
+        filename: "coverage/clover.xml"
+
+    - name: Extract branch name
+      shell: bash
+      run: |
+        TMP_PULL_HEAD_REF="${{ github.head_ref }}"
+        TMP_GITHUB_REF="${GITHUB_REF#refs/heads/}"
+        EXPORT_VALUE=""
+        if [ "${TMP_PULL_HEAD_REF}" != "" ]
+        then
+            EXPORT_VALUE="${TMP_PULL_HEAD_REF}"
+        else
+            EXPORT_VALUE="${TMP_GITHUB_REF}"
+        fi
+        echo "##[set-output name=branch;]$(echo ${EXPORT_VALUE})"
+      id: extract_branch
+
+    - uses: actions/checkout@v2
+      if: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/master' }}
+      with:
+        ref: badges
+
+    # Use the output from the `coverage` step
+    - name: Generate the badge SVG image
+      if: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/master' }}
+      uses: emibcn/badge-action@v1
+      id: badge
+      with:
+        label: 'Coverage'
+        status: ${{ steps.coverage.outputs.coverage-rounded-display }}
+        color: ${{
+          steps.coverage.outputs.coverage > 90 && 'green'              ||
+          steps.coverage.outputs.coverage > 80 && 'yellow,green'       ||
+          steps.coverage.outputs.coverage > 70 && 'yellow'             ||
+          steps.coverage.outputs.coverage > 60 && 'orange,yellow'      ||
+          steps.coverage.outputs.coverage > 50 && 'orange'             ||
+          steps.coverage.outputs.coverage > 40 && 'red,orange'         ||
+          steps.coverage.outputs.coverage > 30 && 'red,red,orange'     ||
+          steps.coverage.outputs.coverage > 20 && 'red,red,red,orange' ||
+          'red' }}
+        path: test-coverage.svg
+
+    - name: Commit badge
+      if: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/master' }}
+      env:
+        BRANCH: ${{ steps.extract_branch.outputs.branch }}
+        FILE: 'test-coverage.svg'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        mkdir -p "${BRANCH}"
+        mv "${FILE}" "${BRANCH}"
+        git add "${BRANCH}/${FILE}"
+
+        # Will give error if badge did not changed
+        git commit -m "Add/Update badge" || true
+    - name: Push badge commit
+      if: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/master' }}
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: badges
+
+  build:
+    runs-on: ubuntu-20.04
+    needs: [lint, test]
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        with:
+          path: |
+            node_modules
+            .yarn/cache
+          key: ${{ runner.OS }}-build-${{ hashFiles('**/yarn.lock') }}-${{ hashFiles('.github/workflows/*.yml') }}
+          restore-keys: |
+            ${{ runner.OS }}-build-${{ hashFiles('**/yarn.lock') }}
+            ${{ runner.OS }}-build
+
+      - name: yarn install
+        run: yarn --immutable
+        shell: bash
+
+      - name: build
+        run: yarn build
+        shell: bash
+
+      - name: test build
+        run: yarn test-build --color
+        shell: bash
+
