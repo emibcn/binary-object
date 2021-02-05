@@ -10,8 +10,8 @@ Manage binary data with strictly typed JavaScript Object-oriented programming.
    - [First: polyfill if needed](#first-polyfill-if-needed)
    - [Second: decorators or not](#second-decorators-or-not)
    - [Examples](#examples)
- -  [Memory owner](#memory-owner)
- -  [Use cases](#use-cases)
+ - [Memory owner](#memory-owner)
+ - [Use cases](#use-cases)
    - [WebAssembly](#webassembly)
    - [Disable Garbage Collector (GC)](#disable-garbage-collector-gc)
    - [Workers API](#workers-api)
@@ -19,7 +19,7 @@ Manage binary data with strictly typed JavaScript Object-oriented programming.
    - [Accessing binary data files](#accessing-binary-data-files)
    - [Accessing binary APIs](#accessing-binary-apis)
    - [Develop backend DB APIs](#develop-backend-db-apis)
- -  [See also](#see-also)
+ - [See also](#see-also)
 
 ## Install
 With `npm`:
