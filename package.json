@@ -1,5 +1,5 @@
 {
-  "name": "binary-object",
+  "name": "@3m1/binary-object",
   "version": "1.0.0",
   "description": "Manage binary data with JavaScript strictly typed Object-oriented programming",
   "main": "dist/index.js",
@@ -11,12 +11,14 @@
   "scripts": {
     "build-clean": "rm -Rf dist/ ; mkdir dist/",
     "build": "yarn build-clean && webpack",
-    "test-basic": "node_modules/.bin/jest --watchAll --verbose -w1",
+    "test-basic": "node_modules/.bin/jest $([ -z ${CI} ] && echo '--watchAll') --verbose -w1",
     "test": "yarn test-basic src/index.test.js",
     "test-inspect": "NODE_OPTIONS='--inspect' node_modules/.bin/jest --watchAll --verbose -w1 src/index.test.js",
     "test-coverage": "node --expose-gc scripts/test.js --coverage --coverageReporters=html src/",
     "test-build-prepare": "cp src/*.test.* src/TextEncoder-polyfill.js dist/",
-    "test-build": "yarn build && yarn test-build-prepare && yarn test-basic dist/index.test.js"
+    "test-build": "yarn build && yarn test-build-prepare && yarn test-basic dist/index.test.js",
+    "package": "CI=true np --color --preview --branch main --no2fa",
+    "package-force": "CI=true np --color --branch main --no2fa"
   },
   "babel": {
     "presets": [

@@ -1,0 +1,22 @@
+# Editors
+*~
+.*.swp
+
+# Built
+dist
+coverage
+
+# dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Package managers logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker is only for dev
+Dockerfile
+docker-compose.yml
+start-ssh.sh
