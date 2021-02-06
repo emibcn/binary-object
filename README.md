@@ -64,7 +64,7 @@ This library encourages the use of class member decorators, available in Typescr
 
 If you don't want to use decorators, you will need to use it like (not tested):
 ```javascript
-class MyBinaryClass extends BinaryObject { /* Functions/logic/statics */ }
+class MyBinaryClass extends Binary { /* Functions/logic/statics */ }
 Object.defineProperty(MyBinaryClass.prototype, "someMember", binary(Types.Float32));
 ```
 
