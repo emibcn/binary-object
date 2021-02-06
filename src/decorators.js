@@ -1,14 +1,18 @@
 import Types from './Types';
 
-// Class member decorator:
-// - Target: Binary class property
-// - Arguments:
-//   - type: Types.* (from './Types')
+/**
+ * Class member decorator generator for Binary class property
+ * @param {@link Types[*]} (destructured) - Any element from the Types imported object from './Types'
+ * @return {function} - The decorator {@linc decorator} to be used to transform a class member into binary backed
+ */
 const binary = ({bytes, get, set}) => {
-  // Run only once
-  // `target` is an object which will be `assign`ed to Class.prototype
-  // `name` is the class property name
-  // `descriptor` is a descriptor as in `Object.defineProperty(target, name, descriptor)`
+  /**
+   * The class member generated decorator
+   * @param {object} target - is an object which will be `assign`ed to the Class.prototype
+   * @param {string} name - is the class property name
+   * @param {object} `descriptor` is a descriptor as in `Object.defineProperty(target, name, descriptor)`
+   * @return {object} - The new or modified descriptor for this class member
+   */
   return function decorator(target, name, descriptor) {
     //const deleted = (() => {
     //  const {value, initializer, writable} = descriptor;
@@ -30,9 +34,18 @@ const binary = ({bytes, get, set}) => {
       // TODO: Do something with initializer as default value
       configurable: false,
       enumerable: true,
+      /**
+       * Returns the value handled by this class member
+       * @return {any} - The value in memory, translated by the Type.* getter
+       */
       get() {
         return get(this._dv, this._initialOffset + offset)
       },
+      /**
+       * Modifies the value handled by this class member
+       * @param {any} value - The new value to be assigned, which will be translated by the Types.* setter
+       * @return {boolean} - Always true, as needed by JS setters
+       */
       set(value) {
         set(this._dv, this._initialOffset + offset, value);
         return true;
@@ -48,7 +61,20 @@ const binary = ({bytes, get, set}) => {
 // instantiation (if using @nonenumerable), at the cost of losing some
 // JS class syntax benefits.
 // If using withBinary, don't use `extend Binary` and don't use `new` either.
+/**
+ * Decorator to add Binary behavior to a class containing `@binary` members, but
+ * without extending Binary class
+ * @param {*} Class - A class not extending Binary containing `@binary` members
+ * @return {@link wrapper} A {@link Class} instantiator
+ * */
 const withBinary = (Class) => {
+  /**
+   * Class wrapper (object constructor)
+   * @param {ArrayBuffer/SharedArrayBuffer/DataView} binOrDV - The buffer where the data lives
+   * @param {number} initialOffset - Buffer offset before this object data start
+   * @param {array} args - Any arguments passed to the class constructor
+   * @return {@link Class} instance
+   * */
   const wrapper = (binOrDV, initialOffset=0, ...args) => {
     const target = new Class(...args);
     target._dv = (binOrDV instanceof DataView)
@@ -57,6 +83,8 @@ const withBinary = (Class) => {
     target._initialOffset = initialOffset;
 
     // Get a single byte (as unsigned integer) from a position
+    // @param {number} offset - The position of the byte to get
+    // @return {number} The unsigned numeric value at this byte
     //@nonenumerable
     target.getByteAt = (offset) => Types.Uint8.get(this._dv, this._initialOffset + offset);
 
@@ -93,7 +121,14 @@ const withBinary = (Class) => {
     enumerable: false,
   });
 
-  // Array creator helper
+  /**
+   * Array creator helper
+   * @param {ArrayBuffer/SharedArrayBuffer/DataView} binOrDv - The buffer where the data lives
+   * @param {number} length - The length of elements to create
+   * @param {number} initialOffset - The initial offset in the buffer before the first element of the array
+   * @param {array} list - The array where new objects will be added
+   * @return {array} - The array {@link list} where the objects have been added
+   */
   wrapper.arrayFactory = function(binOrDV, length, initialOffset=0, list=[]) {
     // Optimize: Generate a single DataView for all elements
     const dv = binOrDV instanceof DataView

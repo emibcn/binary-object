@@ -1,5 +1,6 @@
 import BinaryArray from './BinaryArray';
 
+/** Types used by `@binary` decorator */
 const Types = {
   Float32: {
     extractor: Float32Array,
@@ -73,6 +74,12 @@ const Types = {
   //          - Ensures each padded array will start at a minimal padding divisor (so it can use TypedArrays)
   //          - If struct has mapped arrays, the bigger from its elements sizes
   //          - If not, default 1
+  /**
+   * Array type generator
+   * @param {@link Types} type - One of Types.*
+   * @param {number} length - The number of elements of the array
+   * @return {object} - The generated Types.* compliant
+   */
   Array: (type, length) => {
     return {
       bytes: length * type.bytes,
@@ -85,6 +92,11 @@ const Types = {
       },
     };
   },
+  /**
+   * Nested/composited struct generator
+   * @param {class} Cls - The class the wrapped member belongs to
+   * @return {object} - The generated Types.* compliant
+   */
   Struct: (Cls) => {
     return {
       bytes: Cls.binarySize,
@@ -104,6 +116,14 @@ const Types = {
       },
     }
   },
+  /**
+   * Text generator
+   * @param {number} length - The maximum length of the binary array (not necessarily equal to the string length)
+   * @param {object} options - The options for the generated text field:
+   *   - @param {text} encoding - The encoding (defaults to utf8)
+   *   - @param {boolean} zeroTerminated - True if using the C zero terminated strings (default)
+   * @return {object} - The generated Types.* compliant
+   */
   Text: (length, {encoding='utf8', zeroTerminated=true}={}) => {
     const decoder = new TextDecoder(encoding);
     const encoder = new TextEncoder(); // Only UTF8 available
