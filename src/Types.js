@@ -1,6 +1,9 @@
 import BinaryArray from './BinaryArray';
 
-/** Types used by `@binary` decorator */
+/**
+  * Types used by the {@link binary} decorator
+  * @enum
+  */
 const Types = {
   Float32: {
     extractor: Float32Array,
@@ -44,6 +47,7 @@ const Types = {
     get: (dv, offset) => dv.getUint8(offset),
     set: (dv, offset, value) => dv.setUint8(offset, value),
   },
+  /** Not implemented */
   Uint8Clamped: {
     extractor: Uint8ClampedArray,
     bytes: 1,
@@ -76,6 +80,7 @@ const Types = {
   //          - If not, default 1
   /**
    * Array type generator
+   * @function
    * @param {@link Types} type - One of Types.*
    * @param {number} length - The number of elements of the array
    * @return {object} - The generated Types.* compliant
@@ -94,6 +99,7 @@ const Types = {
   },
   /**
    * Nested/composited struct generator
+   * @function
    * @param {class} Cls - The class the wrapped member belongs to
    * @return {object} - The generated Types.* compliant
    */
@@ -118,6 +124,7 @@ const Types = {
   },
   /**
    * Text generator
+   * @function
    * @param {number} length - The maximum length of the binary array (not necessarily equal to the string length)
    * @param {object} options - The options for the generated text field:
    *   - @param {text} encoding - The encoding (defaults to utf8)

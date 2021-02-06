@@ -2,16 +2,20 @@ import Types from './Types';
 
 /**
  * Class member decorator generator for Binary class property
- * @param {@link Types[*]} (destructured) - Any element from the Types imported object from './Types'
- * @return {function} - The decorator {@linc decorator} to be used to transform a class member into binary backed
+ * @param {object} type - Any element from the {@link Types}
+ * @return {function} - The {@link decorator} which generates the {@link propertyDescriptor} to be used to transform a class member into binary backed member
+ * @decorator
+ * @method
  */
 const binary = ({bytes, get, set}) => {
   /**
    * The class member generated decorator
-   * @param {object} target - is an object which will be `assign`ed to the Class.prototype
-   * @param {string} name - is the class property name
-   * @param {object} `descriptor` is a descriptor as in `Object.defineProperty(target, name, descriptor)`
-   * @return {object} - The new or modified descriptor for this class member
+   * @param {object} target - object which will be `assign`ed to the Class.prototype
+   * @param {string} name - property name
+   * @param {object} descriptor - descriptor as in `Object.defineProperty(target, name, descriptor)`, like {@link propertyDescriptor}
+   * @return {object} - The new or modified {@link propertyDescriptor} for this class member
+   * @method
+   * @name decorator
    */
   return function decorator(target, name, descriptor) {
     //const deleted = (() => {
@@ -30,21 +34,31 @@ const binary = ({bytes, get, set}) => {
     target.constructor._size += bytes;
     target.constructor._binaryProps.push(name);
 
+    /**
+     * Property definition returned from {@link binary}'s returned {@link decorator}
+     * @name propertyDescriptor
+     */
     return {
       // TODO: Do something with initializer as default value
       configurable: false,
       enumerable: true,
+
       /**
-       * Returns the value handled by this class member
-       * @return {any} - The value in memory, translated by the Type.* getter
+       * Returns the value handled by this class member, defined at its {@link Types}
+       * @return {any} - The value in memory, translated by the {@link Types} getter
+       * @this Binary instance
+       * @name propertyDescriptorGetter
        */
       get() {
         return get(this._dv, this._initialOffset + offset)
       },
+
       /**
-       * Modifies the value handled by this class member
-       * @param {any} value - The new value to be assigned, which will be translated by the Types.* setter
+       * Modifies the value handled by this class member, defined at its {@link Types}
+       * @param {any} value - The new value to be assigned, which will be translated by the {@link Types} setter
        * @return {boolean} - Always true, as needed by JS setters
+       * @this Binary instance
+       * @name propertyDescriptorSetter
        */
       set(value) {
         set(this._dv, this._initialOffset + offset, value);
@@ -64,7 +78,7 @@ const binary = ({bytes, get, set}) => {
 /**
  * Decorator to add Binary behavior to a class containing `@binary` members, but
  * without extending Binary class
- * @param {*} Class - A class not extending Binary containing `@binary` members
+ * @param {class} Class - A class not extending Binary containing `@binary` members
  * @return {@link wrapper} A {@link Class} instantiator
  * */
 const withBinary = (Class) => {
@@ -74,6 +88,7 @@ const withBinary = (Class) => {
    * @param {number} initialOffset - Buffer offset before this object data start
    * @param {array} args - Any arguments passed to the class constructor
    * @return {@link Class} instance
+   * @callback wrapper
    * */
   const wrapper = (binOrDV, initialOffset=0, ...args) => {
     const target = new Class(...args);
@@ -82,10 +97,12 @@ const withBinary = (Class) => {
       : new DataView(binOrDV);
     target._initialOffset = initialOffset;
 
-    // Get a single byte (as unsigned integer) from a position
-    // @param {number} offset - The position of the byte to get
-    // @return {number} The unsigned numeric value at this byte
-    //@nonenumerable
+    /**
+     * Get a single byte (as unsigned integer) from a position
+     * @param {number} offset - The position of the byte to get
+     * @return {number} The unsigned numeric value at this byte
+     * @this {@link Class} instance
+     */
     target.getByteAt = (offset) => Types.Uint8.get(this._dv, this._initialOffset + offset);
 
     // This is desirable, but slowers down instantiation time by 4x times
@@ -109,12 +126,26 @@ const withBinary = (Class) => {
     return target;
   };
 
-  // Allow getting the class size and props from outside (as static)
+  /**
+   * Allow getting the class size from outside
+   * @this wrapper
+   * @static
+   * @method
+   * @name binarySize
+   */
   Object.defineProperty(wrapper, 'binarySize', {
     get() { return Class._size },
     configurable: false,
     enumerable: false,
   });
+
+  /**
+   * Allow getting the class binary props from outside
+   * @this wrapper
+   * @static
+   * @method
+   * @name binarySize
+   */
   Object.defineProperty(wrapper, 'binaryProps', {
     get() { return Class._binaryProps },
     configurable: false,
@@ -128,6 +159,9 @@ const withBinary = (Class) => {
    * @param {number} initialOffset - The initial offset in the buffer before the first element of the array
    * @param {array} list - The array where new objects will be added
    * @return {array} - The array {@link list} where the objects have been added
+   * @this wrapper
+   * @static
+   * @method
    */
   wrapper.arrayFactory = function(binOrDV, length, initialOffset=0, list=[]) {
     // Optimize: Generate a single DataView for all elements

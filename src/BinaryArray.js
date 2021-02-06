@@ -1,9 +1,14 @@
 /** Class for returning array members on Binary objects */
 class BinaryArrayBase {
+  // @member
   type;
+  // @member
   dv;
+  // @member
   offset;
+  // @member
   length;
+  // @member
   bytes;
 
   /**
@@ -25,6 +30,7 @@ class BinaryArrayBase {
    * Proxy array methods using this iterator
    * @param {function} fn - The function to apply on the array elements
    * @return {array} - The new generated array (not bound to original values)
+   * @method
    */
   map = (fn) => Array.from(this, fn);
   //reduce = (...args) => Array.prototype.reduce.call([...this], ...args);
@@ -32,12 +38,14 @@ class BinaryArrayBase {
   /**
    * Transform this array into a JSON string
    * @return {string} - The JSON string representing this array
+   * @method
    */
   toJSON = () => JSON.parse(JSON.stringify( this.map() ));
 
   /**
    * Make a generator iterator
-   * @return {any} - Each of this array elements
+   * @yield {any} - Each of this array elements of type {@link Types}
+   * @generator
    */
   *[Symbol.iterator]() {
     // Deconstruct to optimize and ease reading
@@ -55,7 +63,10 @@ class BinaryArrayBase {
   }
 }
 
-/** A Proxy handler for the {@link BinaryArray} class to allow accessing its elements */
+/**
+ * A Proxy handler for the {@link BinaryArray} class to allow accessing its elements
+ * @enum
+ */
 const BinaryArrayHandler = {
 
   /**

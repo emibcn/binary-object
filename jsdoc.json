@@ -1,0 +1,10 @@
+{
+    "plugins": [
+	"plugins/markdown",
+        "plugins/summarize"
+    ],
+    "templates": {
+        "cleverLinks": false,
+        "monospaceLinks": true
+    }
+}

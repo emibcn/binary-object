@@ -70,6 +70,7 @@ class Binary {
   /**
    * Transform this object into a JSON string containing all the binary members
    * @return {string} - The JSON string
+   * @method
    */
   //@nonenumerable
   toJSON = () => this.constructor._binaryProps
@@ -103,6 +104,7 @@ class Binary {
    * Get a single byte (as unsigned integer) from a position
    * @param {number} offset - The position of the byte to get
    * @return {number} - The unsigned numerical number at the specified position
+   * @method
    */
   //@nonenumerable
   getByteAt = (offset) => Types.Uint8.get(this._dv, this._initialOffset + offset);

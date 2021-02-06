@@ -36,7 +36,8 @@
     "test-build-prepare": "cp src/*.test.* src/TextEncoder-polyfill.js dist/",
     "test-build": "yarn build && yarn test-build-prepare && yarn test-basic dist/index.test.js",
     "package": "CI=true np --color --preview --branch main --no2fa",
-    "package-force": "CI=true np --color --branch main --no2fa"
+    "package-force": "CI=true np --color --branch main --no2fa",
+    "mkdocs":"yarn jsdoc -c jsdoc.json src -d doc"
   },
   "babel": {
     "presets": [
@@ -100,6 +101,7 @@
     "babel-loader": "^8.2.2",
     "jest": "^26.6.3",
     "jest-circus": "^26.6.3",
+    "jsdoc": "^3.6.6",
     "util": "^0.12.3",
     "webpack": "^5.20.1",
     "webpack-cli": "^4.5.0"
