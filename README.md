@@ -195,11 +195,16 @@ class Game {
     this.dvBullets = new DataView(this.binBullets);
 
     // Half of the bullets for each player
-    for(let i = 0; i < maxBullets; i++) {
-      const player = i < (maxBullets/2) ? this.player1 : this.player2;
-      const {bullets} = player;
-      bullets.push(new Bullet(this.dvBullets, Bullet.binarySize * i) );
-    }
+    Bullets.arrayFactory(
+      this.dvBullets,
+      maxBullets / 2,
+      0,
+      player1.bullets);
+    Bullets.arrayFactory(
+      this.dvBullets,
+      maxBullets / 2,
+      maxBullets / 2,
+      player2.bullets);
   }
 
   // You can move Bullets using a parallel worker or a WASM code block
