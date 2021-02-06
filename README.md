@@ -9,6 +9,7 @@ Manage binary data with strictly typed JavaScript Object-oriented programming.
  - [Usage](#usage)
    - [First: polyfill if needed](#first-polyfill-if-needed)
    - [Second: decorators or not](#second-decorators-or-not)
+   - [API](#api)
    - [Examples](#examples)
  - [Memory owner](#memory-owner)
  - [Use cases](#use-cases)
