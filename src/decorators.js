@@ -1,3 +1,5 @@
+import Types from './Types';
+
 // Class member decorator:
 // - Target: Binary class property
 // - Arguments:
@@ -17,7 +19,7 @@ const binary = ({bytes, get, set}) => {
     target.constructor._size = target.constructor._size ?? 0;
     target.constructor._binaryProps = target.constructor._binaryProps ?? [];
 
-    // Get this poroperty offset
+    // Get this property offset
     const offset = target.constructor._size;
 
     // Add property size to Class size (at static Class property)
@@ -44,8 +46,8 @@ const binary = ({bytes, get, set}) => {
 
 // Using `withBinary` as class decorator is 4x times faster in
 // instantiation (if using @nonenumerable), at the cost of losing some
-// JS class syntax benefits if using withBinary, don't use `extend Binary`
-// and don't use `new` either.
+// JS class syntax benefits.
+// If using withBinary, don't use `extend Binary` and don't use `new` either.
 const withBinary = (Class) => {
   const wrapper = (binOrDV, initialOffset=0, ...args) => {
     const target = new Class(...args);
@@ -53,6 +55,10 @@ const withBinary = (Class) => {
       ? binOrDV
       : new DataView(binOrDV);
     target._initialOffset = initialOffset;
+
+    // Get a single byte (as unsigned integer) from a position
+    //@nonenumerable
+    target.getByteAt = (offset) => Types.Uint8.get(this._dv, this._initialOffset + offset);
 
     // This is desirable, but slowers down instantiation time by 4x times
     // Note: `defineProperties` is +0,25 slower
@@ -75,12 +81,31 @@ const withBinary = (Class) => {
     return target;
   };
 
-  // Allow getting the class size from outside (as static)
+  // Allow getting the class size and props from outside (as static)
   Object.defineProperty(wrapper, 'binarySize', {
     get() { return Class._size },
     configurable: false,
     enumerable: false,
   });
+  Object.defineProperty(wrapper, 'binaryProps', {
+    get() { return Class._binaryProps },
+    configurable: false,
+    enumerable: false,
+  });
+
+  // Array creator helper
+  wrapper.arrayFactory = function(binOrDV, length, initialOffset=0, list=[]) {
+    // Optimize: Generate a single DataView for all elements
+    const dv = binOrDV instanceof DataView
+      ? binOrDV
+      : new DataView(binOrDV, initialOffset, length * Class._size)
+
+    for(let i = 0; i < length; i++) {
+      list.push(wrapper(dv, initialOffset + Class._size * i));
+    }
+
+    return list
+  }
 
   return wrapper;
 }

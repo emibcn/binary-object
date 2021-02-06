@@ -14,15 +14,6 @@ class BinaryTest extends Binary {
   showId = () => console.log(`My id is ${this.id}`);
 }
 
-class BinaryWithoutArrayTest extends Binary {
-  @binary(Types.Uint32)
-  id = 0;
-  @binary(Types.Float64)
-  testFloat = 0;
-
-  showId = () => console.log(`My id is ${this.id}`);
-}
-
 const binTest = new ArrayBuffer(BinaryTest.binarySize);
 const proxyObject = new BinaryTest(binTest);
 
@@ -105,6 +96,33 @@ test("Get and set properties in arrays", () => {
   const newArr = [1,0,0,0,0,0,0,0,0,1];
   proxyObject.testFloatArray = newArr;
   expect([...testArray]).toEqual(newArr);
+});
+
+test("Class inheritance works", () => {
+  class BinaryChildTest extends BinaryTest {
+    @binary(Types.Uint8)
+    someMemberAtTheEnd;
+  }
+
+  const binTest2 = new ArrayBuffer(BinaryChildTest.binarySize);
+  const testChild = new BinaryChildTest(binTest2);
+
+  // Test inherited member
+  expect(testChild.id).toBe(0);
+  testChild.id = 12345;
+  expect(testChild.id).toBe(12345);
+
+  // Test changing last inherited member does not overflows
+  const initialArr = new Array(10).fill(0);
+  expect([...testChild.testFloatArray]).toEqual(initialArr);
+  const newArr = new Array(10).fill(255);
+  testChild.testFloatArray = newArr;
+  expect([...testChild.testFloatArray]).toEqual(newArr);
+
+  // Child members are at the end: test last byte change
+  expect(testChild.getByteAt(BinaryChildTest.binarySize-1)).toBe(0);
+  testChild.someMemberAtTheEnd = 255;
+  expect(testChild.getByteAt(BinaryChildTest.binarySize-1)).toBe(255);
 });
 
 test("Get and set properties in nested structs", () => {
@@ -334,13 +352,10 @@ test("Profile a natural object against a binary object", () => {
   // Binary Object
   //
   gc();
-  const bObjList = [];
+  let bObjList;
   testProfile('Binary Object instantation', () => {
     const binTest2 = new ArrayBuffer(BinaryTest.binarySize * iterations);
-    const dv = new DataView(binTest2);
-    for(let i = 0; i < iterations; i++) {
-      bObjList.push(new BinaryTest(dv, BinaryTest.binarySize * i));
-    }
+    bObjList = BinaryTest.arrayFactory(binTest2, iterations);
   });
 
   testObjList('Binary Object', bObjList);
@@ -349,13 +364,19 @@ test("Profile a natural object against a binary object", () => {
   // Binary Object
   //
   gc();
-  const bwoaObjList = [];
+  let bwoaObjList;
   testProfile('Binary Object without array instantation', () => {
-    const binTest2 = new ArrayBuffer(BinaryWithoutArrayTest.binarySize * iterations);
-    const dv = new DataView(binTest2);
-    for(let i = 0; i < iterations; i++) {
-      bwoaObjList.push(new BinaryWithoutArrayTest(dv, BinaryWithoutArrayTest.binarySize * i));
+    class BinaryWithoutArrayTest extends Binary {
+      @binary(Types.Uint32)
+      id = 0;
+      @binary(Types.Float64)
+      testFloat = 0;
+
+      showId = () => console.log(`My id is ${this.id}`);
     }
+
+    const binTest2 = new ArrayBuffer(BinaryWithoutArrayTest.binarySize * iterations);
+    bwoaObjList = BinaryWithoutArrayTest.arrayFactory(binTest2, iterations);
   });
 
   testObjList('Binary Object without array', bwoaObjList);
@@ -364,7 +385,7 @@ test("Profile a natural object against a binary object", () => {
   // Binary Object with class decorator
   //
   gc();
-  const bdObjList = [];
+  let bdObjList;
   testProfile('Binary Object with class decorator instantation', () => {
 
     @withBinary
@@ -380,10 +401,7 @@ test("Profile a natural object against a binary object", () => {
     };
 
     const binTest2 = new ArrayBuffer(BinaryObjectWithDecorator.binarySize * iterations);
-    const dv = new DataView(binTest2);
-    for(let i = 0; i < iterations; i++) {
-      bdObjList.push(BinaryObjectWithDecorator(dv, BinaryObjectWithDecorator.binarySize * i));
-    }
+    bdObjList = BinaryObjectWithDecorator.arrayFactory(binTest2, iterations);
   });
 
   testObjList('Binary Object with class decorator', bdObjList);

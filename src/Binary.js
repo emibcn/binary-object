@@ -20,6 +20,20 @@ class Binary {
   //@nonenumerable
   static get binaryProps() { return this._binaryProps }
 
+  //@nonenumerable
+  static arrayFactory(binOrDV, length, initialOffset=0, list=[]) {
+    // Optimize: Generate a single DataView for all elements
+    const dv = binOrDV instanceof DataView
+      ? binOrDV
+      : new DataView(binOrDV, initialOffset, length * this._size)
+
+    for(let i = 0; i < length; i++) {
+      list.push(new this(dv, initialOffset + this._size * i));
+    }
+
+    return list
+  }
+
   // Prototype props
   //@nonenumerable
   _initialOffset;
