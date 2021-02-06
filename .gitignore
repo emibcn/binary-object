@@ -4,6 +4,7 @@
 
 # Built
 dist
+doc
 coverage
 
 # dependencies
