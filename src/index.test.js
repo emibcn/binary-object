@@ -625,5 +625,5 @@ test("Profile a natural object against a binary object", async () => {
     [name]: rest,
   }), {});
   console.table(memoryDiffTable);
-}, 4e4);
+}, 6e4);
 
