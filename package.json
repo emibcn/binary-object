@@ -1,6 +1,6 @@
 {
   "name": "@3m1/binary-object",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "Manage binary data with JavaScript strictly typed Object-oriented programming",
   "main": "dist/index.js",
   "module": "src/index.js",
@@ -37,7 +37,7 @@
     "test-build": "yarn build && yarn test-build-prepare && yarn test-basic dist/index.test.js",
     "package": "CI=true np --color --preview --branch main --no2fa",
     "package-force": "CI=true np --color --branch main --no2fa",
-    "mkdocs":"yarn jsdoc -c jsdoc.json src -d doc"
+    "mkdocs": "yarn jsdoc -c jsdoc.json src -d doc"
   },
   "babel": {
     "presets": [
