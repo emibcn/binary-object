@@ -13,6 +13,7 @@ CODE_OF_CONDUCT.md
 # NPM/Yarn stuff
 node_modules/
 .npmrc
+jsdoc.json
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
