@@ -25,6 +25,15 @@ test("Change property nature (re-define prototype properties) throws error", () 
   }).toThrow(TypeError);
 });
 
+test("Binary size is exact (no padding)", () => {
+  // No padding done (nor needed...)
+  const expectedSize =
+    Types.Uint32.bytes
+    + Types.Float64.bytes
+    + Types.Float32.bytes * 10;
+  expect(BinaryTest.binarySize).toBe(expectedSize);
+});
+
 test("Get and set properties", () => {
   // Initially set to 0
   expect(proxyObject.id).toBe(0);
@@ -100,6 +109,28 @@ test("Get and set properties in arrays", () => {
   const newArr = [1,0,0,0,0,0,0,0,0,1];
   proxyObject.testFloatArray = newArr;
   expect([...testArray]).toEqual(newArr);
+});
+
+test("Test non padded array", () => {
+  const type = Types.Uint32;
+  const length = 5;
+  class BinaryNoPadTest extends Binary {
+    @binary(Types.Uint8)
+    someMemberAtTheBegining;
+
+    // Not padded (smaller, slower)
+    @binary(Types.Array(type, length))
+    testArray;
+
+    @binary(Types.Uint8)
+    someMemberAtTheEnd;
+  }
+
+  const expectedSize =
+    1                            // First byte
+    + (length * type.bytes)      // Not padded array
+    + 1;                         // Last byte
+  expect(BinaryNoPadTest.binarySize).toBe(expectedSize);
 });
 
 test("Test padded array", () => {
@@ -341,7 +372,9 @@ test("Instantiate an object with a binary data using an initial offset > 0", () 
   expect(values).toEqual( expectedValues );
 });
 
-test("Profile a natural object against a binary object", () => {
+test("Profile a natural object against a binary object", async () => {
+
+  const sleep = (millis) => new Promise( resolve => setTimeout(resolve, millis));
 
   let gc = () => {
     global.gc();
@@ -381,9 +414,9 @@ test("Profile a natural object against a binary object", () => {
   });
 
   // Helper to launch each profile test
-  const testProfile = (name, fn) => {
+  const testProfile = async (name, fn) => {
     const dateStart = new Date();
-    const ret = fn();
+    const ret = await fn();
     const dateEnd = new Date();
     const time = dateEnd - dateStart;
     memory.push({
@@ -394,71 +427,115 @@ test("Profile a natural object against a binary object", () => {
     return ret;
   }
 
-  const testObjList = (name, objList) => {
-    testProfile(`${name} modification`, () => {
+  const testObjList = async (name, objList) => {
+    await testProfile(`${name} modification`, () => {
       objList.forEach( (obj, id) => { obj.id = id });
     });
  
-    const matched = testProfile(`${name} access`, () => {
+    const matched = await testProfile(`${name} access`, () => {
       return objList.every( (obj, id) => id === obj.id );
     });
     expect(matched).toBe(true);
  
-    testProfile(`${name} access 2nd phase`, () => {
+    await testProfile(`${name} access 2nd phase`, () => {
       objList.every( (obj, id) => id === obj.id );
     });
  
-    testProfile(`${name} modification 2nd phase`, () => {
+    await testProfile(`${name} modification 2nd phase`, () => {
       objList.forEach( (obj, id) => { obj.id = id } );
     });
+
+    if ('testFloatArray' in objList[0]) {
+      await testProfile(`${name} access array element`, () => {
+        objList.every( ({testFloatArray}) => testFloatArray[0] === 0 );
+      });
+
+      await testProfile(`${name} modification array element`, () => {
+        objList.forEach( ({testFloatArray}, id) => testFloatArray[0] = id );
+      });
+
+      await testProfile(`${name} access array element 2nd phase`, () => {
+        objList.every( ({testFloatArray}, id) => testFloatArray[0] === id );
+      });
+
+      await testProfile(`${name} modification array element 2nd phase`, () => {
+        objList.forEach( ({testFloatArray}, id) => testFloatArray[0] = id*2 );
+      });
+    }
+
+    await testProfile(`${name} garbage collected`, async () => {
+      gc();
+      await sleep(1000);
+      gc();
+    });
   }
+
+  gc();
 
   //
   // Natural Object
   //
-  gc();
   const nObjList = []; // new Array(iterations) is much slower
-  testProfile('Natural Object instantation', () => {
+  await testProfile('Natural Object instantation', () => {
     for(let i = 0; i < iterations; i++) {
       nObjList.push(new NaturalObject());
     }
   });
 
-  testObjList('Natural Object', nObjList);
+  await testObjList('Natural Object', nObjList);
 
   //
   // Binary Object
   //
-  gc();
   let bObjList;
-  testProfile('Binary Object instantation', () => {
+  await testProfile('Binary Object instantation', () => {
     const binTest2 = new ArrayBuffer(BinaryTest.binarySize * iterations);
     bObjList = BinaryTest.arrayFactory(binTest2, iterations);
   });
 
-  testObjList('Binary Object', bObjList);
+  await testObjList('Binary Object', bObjList);
 
   //
   // Binary Object with pre-created DataView
   //
-  gc();
   let binTest3, dv3, bDvObjList;
-  testProfile('Binary Object with pre-created DataView alloc memory', () => {
+  await testProfile('Binary Object with pre-created DataView alloc memory', () => {
     binTest3 = new ArrayBuffer(BinaryTest.binarySize * iterations);
     dv3 = new DataView(binTest3);
   });
-  testProfile('Binary Object with pre-created DataView instantation', () => {
+  await testProfile('Binary Object with pre-created DataView instantation', () => {
     bDvObjList = BinaryTest.arrayFactory(dv3, iterations);
   });
 
-  testObjList('Binary Object with pre-created DataView', bDvObjList);
+  await testObjList('Binary Object with pre-created DataView', bDvObjList);
 
   //
-  // Binary Object
+  // Binary Object with padded array
   //
-  gc();
+  let bwpaObjList;
+  await testProfile('Binary Object with padded array instantiation', () => {
+    class BinaryTestPadded extends Binary {
+      @binary(Types.Uint32)
+      id = 0;
+      @binary(Types.Float64)
+      testFloat = 0;
+      @binary(Types.Array(Types.Float32, 10, true))
+      testFloatArray;
+
+      showId = () => console.log(`My id is ${this.id}`);
+    }
+
+    const binTest2 = new ArrayBuffer(BinaryTestPadded.binarySize * iterations);
+    bwpaObjList = BinaryTestPadded.arrayFactory(binTest2, iterations);
+  });
+
+  await testObjList('Binary Object with padded array', bwpaObjList);
+
+  //
+  // Binary Object without array
+  //
   let bwoaObjList;
-  testProfile('Binary Object without array instantation', () => {
+  await testProfile('Binary Object without array instantation', () => {
     class BinaryWithoutArrayTest extends Binary {
       @binary(Types.Uint32)
       id = 0;
@@ -472,14 +549,13 @@ test("Profile a natural object against a binary object", () => {
     bwoaObjList = BinaryWithoutArrayTest.arrayFactory(binTest2, iterations);
   });
 
-  testObjList('Binary Object without array', bwoaObjList);
+  await testObjList('Binary Object without array', bwoaObjList);
 
   //
   // Binary Object with class decorator
   //
-  gc();
   let bdObjList;
-  testProfile('Binary Object with class decorator instantation', () => {
+  await testProfile('Binary Object with class decorator instantation', () => {
 
     @withBinary
     class BinaryObjectWithDecorator {
@@ -497,7 +573,31 @@ test("Profile a natural object against a binary object", () => {
     bdObjList = BinaryObjectWithDecorator.arrayFactory(binTest2, iterations);
   });
 
-  testObjList('Binary Object with class decorator', bdObjList);
+  await testObjList('Binary Object with class decorator', bdObjList);
+
+  //
+  // Binary Object with class decorator and padded array
+  //
+  let bdpObjList;
+  await testProfile('Binary Object with class decorator instantation and padded array', () => {
+
+    @withBinary
+    class BinaryObjectWithDecorator {
+      @binary(Types.Uint32)
+      id = 0;
+      @binary(Types.Float64)
+      testFloat = 0;
+      @binary(Types.Array(Types.Float32, 10, true))
+      testFloatArray;
+
+      showId = () => console.log(`My id is ${this.id}`);
+    };
+
+    const binTest2 = new ArrayBuffer(BinaryObjectWithDecorator.binarySize * iterations);
+    bdpObjList = BinaryObjectWithDecorator.arrayFactory(binTest2, iterations);
+  });
+
+  await testObjList('Binary Object with class decorator and padded array', bdpObjList);
 
   // Show collected metrics in a table
   const numberWithCommas = (x) => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -525,5 +625,5 @@ test("Profile a natural object against a binary object", () => {
     [name]: rest,
   }), {});
   console.table(memoryDiffTable);
-});
+}, 4e4);
 

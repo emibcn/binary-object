@@ -32,7 +32,7 @@
     "test": "yarn test-basic src/index.test.js",
     "test-inspect": "NODE_OPTIONS='--inspect' node_modules/.bin/jest --watchAll --verbose -w1 src/index.test.js",
     "test-coverage": "yarn build-clean && node node_modules/.bin/jest --coverage --verbose -w1 src/index.test.js",
-    "test-coverage-html": "node node_modules/.bin/jest --coverage --coverageReporters=html --watchAll --verbose -w1 src/index.test.js",
+    "test-coverage-html": "node --expose-gc node_modules/.bin/jest --coverage --coverageReporters=html --watchAll --verbose -w1 src/index.test.js",
     "test-build-prepare": "cp src/*.test.* src/TextEncoder-polyfill.js dist/",
     "test-build": "yarn build && yarn test-build-prepare && yarn test-basic dist/index.test.js",
     "package": "CI=true np --color --preview --branch main --no2fa",
