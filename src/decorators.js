@@ -10,9 +10,9 @@ import Types from './Types';
 const binary = ({bytes, get, set}) => {
   /**
    * The class member generated decorator
-   * @param {object} target - object which will be `assign`ed to the Class.prototype
+   * @param {object} target - object which will be `assign`ed to the Class.prototype (extending {@link Binary} or decorated with {@link withBinary})
    * @param {string} name - property name
-   * @param {object} descriptor - descriptor as in `Object.defineProperty(target, name, descriptor)`, like {@link propertyDescriptor}
+   * @param {object} descriptor - as in `Object.defineProperty(target, name, descriptor)`, like {@link propertyDescriptor}
    * @return {object} - The new or modified {@link propertyDescriptor} for this class member
    * @method
    * @name decorator

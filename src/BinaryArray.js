@@ -1,4 +1,4 @@
-/** Class for returning array members on Binary objects */
+/** Class for returning array members from {@link Binary} objects */
 class BinaryArrayBase {
   // @member
   type;
@@ -14,8 +14,8 @@ class BinaryArrayBase {
   /**
    * Creates a new customized array
    * @param {DataView} dv - The DataView handling the buffer where the data lives
-   * @param {object} type - The type of the array members (from Types.*)
-   * @param {number} offset - The offset before the first member of the array
+   * @param {object} type - The type of the array members from {@link Types}
+   * @param {number} offset - The offset of the first member of the array into the buffer
    * @param {number} length - The length of the array
    */
   constructor(dv, type, offset, length) {
@@ -44,8 +44,11 @@ class BinaryArrayBase {
 
   /**
    * Make a generator iterator
-   * @yield {any} - Each of this array elements of type {@link Types}
+   * @method
    * @generator
+   * @function iterator
+   * @yield {any} - Each of this array elements of type {@link Types}
+   * @name iterator
    */
   *[Symbol.iterator]() {
     // Deconstruct to optimize and ease reading
@@ -71,9 +74,9 @@ const BinaryArrayHandler = {
 
   /**
    * Getter for the elements of the handled {@link BinaryArray}
-   * @param {BinaryArray} target - The handled {@link BinaryArray}
+   * @param {BinaryArray} target - The handled {@link BinaryArray} instance
    * @param {string} prop - The property to return (only handled when prop is a string representing a number)
-   * @return {any} - The element at {@link prop} position, or a reflected value to {@link target}
+   * @return {any} - The element at {@link prop} position, or a reflected value from {@link target}
    */
   get(target, prop) {
     // Very inefficient way
@@ -99,10 +102,10 @@ const BinaryArrayHandler = {
 
   /**
    * Setter for the elements of the handled {@link BinaryArray}
-   * @param {BinaryArray} target - The handled {@link BinaryArray}
+   * @param {BinaryArray} target - The handled {@link BinaryArray} instance
    * @param {string} prop - The property to set (only handled when prop is a string representing a number)
    * @param {any} value - The value to assign to the {@link prop}'th element
-   * @return {boolean} - If {@link prop} is numericalish true (as needed for JS setters), else the return value from the {@link target} reflected setter
+   * @return {boolean} - If {@link prop} is numericalish, true (as needed for JS setters), else the return value from the {@link target} reflected setter
    */
   set(target, prop, value) {
     if (prop === '0' || (
@@ -128,7 +131,7 @@ const BinaryArrayHandler = {
 /**
  * Proxy creator for {@link BinaryArrayBase}
    * @param {DataView} dv - The DataView handling the buffer where the data lives
-   * @param {object} type - The type of the array members (from Types.*)
+   * @param {object} type - The type of the array members from {@link Types}
    * @param {number} offset - The offset before the first member of the array
    * @param {number} length - The length of the array
    * @return {Proxy} - The proxy to {@link BinaryArrayBase} with {@link BinaryArrayHandler} as proxy handler
