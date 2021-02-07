@@ -41,7 +41,7 @@ class Binary {
     // Optimize: Generate a single DataView for all elements
     const dv = binOrDV instanceof DataView
       ? binOrDV
-      : new DataView(binOrDV, initialOffset, length * this._size)
+      : new DataView(binOrDV)
 
     for(let i = 0; i < length; i++) {
       list.push(new this(dv, initialOffset + this._size * i));
