@@ -13,7 +13,6 @@ CODE_OF_CONDUCT.md
 # NPM/Yarn stuff
 node_modules/
 .npmrc
-jsdoc.json
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -27,6 +26,7 @@ start-ssh.sh
 coverage
 doc
 webpack.config.js
+jsdoc.json
 src/index.test.js
 src/TextEncoder-polyfill.js
 dist/index.test.js
