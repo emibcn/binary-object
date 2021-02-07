@@ -30,7 +30,7 @@ const binary = ({bytes, padding=false, get, set}) => {
     // Create an initial padding offset if needed
     const size = target.constructor._size;
     const paddingOffset = padding
-      ? padding - (size % bytes)
+      ? padding - (size % padding)
       : 0;
 
     // Get this property offset
