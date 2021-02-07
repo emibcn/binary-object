@@ -24,6 +24,7 @@ start-ssh.sh
 
 # Development, test and build assets
 coverage
+doc
 webpack.config.js
 src/index.test.js
 src/TextEncoder-polyfill.js
