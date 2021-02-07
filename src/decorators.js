@@ -7,7 +7,7 @@ import Types from './Types';
  * @decorator
  * @method
  */
-const binary = ({bytes, get, set}) => {
+const binary = ({bytes, padding=false, get, set}) => {
   /**
    * The class member generated decorator
    * @param {object} target - object which will be `assign`ed to the Class.prototype (extending {@link Binary} or decorated with {@link withBinary})
@@ -27,11 +27,17 @@ const binary = ({bytes, get, set}) => {
     target.constructor._size = target.constructor._size ?? 0;
     target.constructor._binaryProps = target.constructor._binaryProps ?? [];
 
+    // Create an initial padding offset if needed
+    const size = target.constructor._size;
+    const paddingOffset = padding
+      ? padding - (size % bytes)
+      : 0;
+
     // Get this property offset
-    const offset = target.constructor._size;
+    const offset = target.constructor._size + paddingOffset;
 
     // Add property size to Class size (at static Class property)
-    target.constructor._size += bytes;
+    target.constructor._size += bytes + paddingOffset;
     target.constructor._binaryProps.push(name);
 
     /**

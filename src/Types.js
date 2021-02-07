@@ -70,51 +70,68 @@ const Types = {
     get: (dv, offset) => dv.getBigUint64(offset),
     set: (dv, offset, value) => dv.setBigUint64(offset, value),
   },
-  // TODO: Add a padding option (or ArrayPadded) to allow using primitive TypedArray
-  //       Needs to add a static prop `minimalPadding` (which defaults to 1).
-  //        - Each type/class declares the minimum padding size
-  //        - On Arrays, equals to eleemtns size or structs minimal padding size
-  //        - On Structs:
-  //          - Ensures each padded array will start at a minimal padding divisor (so it can use TypedArrays)
-  //          - If struct has mapped arrays, the bigger from its elements sizes
-  //          - If not, default 1
+
   /**
-   * Array type generator
+   * Array type generator `(type, length, padding=false)`
    * @function
    * @param {@link Types} type - One of Types.*
    * @param {number} length - The number of elements of the array
+   * @param {boolean} padding - If true, adds initial unused bytes so initialOffset is a multiple of the elements size. One byte size {@link Types} are always treated as padded for optimization.
    * @return {object} - The generated Types.* compliant
    */
-  Array: (type, length) => {
+  Array: (type, length, padding=false) => {
     return {
       bytes: length * type.bytes,
-      get(dv, offset) {
-        return BinaryArray(dv, type, offset, length);
-      },
-      set(dv, offset, values) {
-        values.forEach( (value, index) => type.set(dv, offset + (type.bytes * index), value) );
-        return true;
-      },
+      padding: padding && type.bytes,
+      // Change getter/setter depending on padding ensured
+      // 1-byte sized native types always have padding ensured
+      ...(padding || ('extractor' in type && type.bytes === 1)
+        ? {
+          get(dv, offset) {
+            return new type.extractor(dv.buffer, offset, length);
+          },
+          set(dv, offset, values) {
+            const typed = new type.extractor(dv.buffer, offset, length);
+            typed.set(values);
+            return true;
+          },
+        }
+        : {
+          get(dv, offset) {
+            return BinaryArray(dv, type, offset, length);
+          },
+          set(dv, offset, values) {
+            values.forEach(
+              (value, index) => type.set(
+                dv,
+                offset + (type.bytes * index),
+                value
+              )
+            );
+            return true;
+          },
+        })
     };
   },
+
   /**
-   * Nested/composited struct generator
+   * Nested/composited struct generator `(Class)` which extends {@link Binary}
    * @function
-   * @param {class} Cls - The class the wrapped member belongs to
-   * @return {object} - The generated Types.* compliant
+   * @param {class} Class - The class the wrapped member belongs to
+   * @return {object} - The generated {@link Types} compliant
    */
-  Struct: (Cls) => {
+  Struct: (Class) => {
     return {
-      bytes: Cls.binarySize,
+      bytes: Class.binarySize,
       get(dv, offset) {
-        return new Cls(dv, offset);
+        return new Class(dv, offset);
       },
       set(dv, offset, values) {
         // TODO: Test if values is a Binary Object and we can just copy binary data, or nothing,
         //       because binary data, class and offset are the same.
-        const obj = new Cls(dv, offset);
+        const obj = new Class(dv, offset);
         for( const prop of Object.keys(values) ) {
-          if( Cls.binaryProps.includes(prop) ) {
+          if( Class.binaryProps.includes(prop) ) {
             obj[prop] = values[prop];
           }
         }
@@ -122,8 +139,9 @@ const Types = {
       },
     }
   },
+
   /**
-   * Text generator
+   * Text generator `(length, {encoding='utf8', zeroTerminated=true}={})`
    * @function
    * @param {number} length - The maximum length of the binary array (not necessarily equal to the string length)
    * @param {object} options - The options for the generated text field:

@@ -125,6 +125,32 @@ proxyObject.testFloatArray = newArr;
 expect([...testArray]).toEqual(newArr);
 ```
 
+You can define padded arrays for better performance and, maybe, enforced by API:
+```javascript
+  const type = Types.Uint32;
+  const length = 5;
+  class BinaryPadTest extends Binary {
+    @binary(Types.Uint8)
+    someMemberAtTheBegining;
+
+    // Here, `true` reffers to padding
+    @binary(Types.Array(type, length, true))
+    testArray;
+
+    @binary(Types.Uint8)
+    someMemberAtTheEnd;
+  }
+
+  const binTest2 = new ArrayBuffer(BinaryPadTest.binarySize);
+  const testObj = new BinaryPadTest(binTest2);
+
+  // The first byte of someMemberAtTheBegining forces to consume
+  // a full testArray element before it (for padding)
+  const expectedSize = ((length + 1) * type.bytes) + 1;
+  expect(BinaryPadTest.binarySize).toBe(expectedSize);
+  expect(testObj.testArray).toBeInstanceOf(type.extractor); // Uint32Array
+```
+
 Object composition is also allowed:
 ```javascript
 class BinaryArrayOfNestedTest extends Binary {

@@ -86,6 +86,10 @@ test("Get and set properties in arrays", () => {
   expect(testArray[1]).toBe(2);
   expect(testArray[2]).toBe(0);
 
+  // Test adding custom prop to array object
+  testArray.someThing = "something else";
+  expect( testArray.someThing ).toBe("something else");
+
   // Map methods
   const mapped = testArray.map( (v, i) => [v, i]);
   expect(mapped).toEqual([[1, 0],[2, 1],[0, 2],[0, 3],[0, 4],[0, 5],[0, 6],[0, 7],[0, 8], [0, 9]]);
@@ -96,6 +100,80 @@ test("Get and set properties in arrays", () => {
   const newArr = [1,0,0,0,0,0,0,0,0,1];
   proxyObject.testFloatArray = newArr;
   expect([...testArray]).toEqual(newArr);
+});
+
+test("Test padded array", () => {
+  const type = Types.Uint32;
+  const type1Byte = Types.Int8;
+  const length = 5;
+  class BinaryPadTest extends Binary {
+    @binary(Types.Uint8)
+    someMemberAtTheBegining;
+
+    // `true` forces array padding
+    @binary(Types.Array(type, length, true))
+    testArray;
+
+    // 1 byte arrays are optimized, even when no `true` is given
+    @binary(Types.Array(type1Byte, length))
+    testArray1Byte;
+
+    @binary(Types.Uint8)
+    someMemberAtTheEnd;
+  }
+
+  const binTest2 = new ArrayBuffer(BinaryPadTest.binarySize);
+  const testObj = new BinaryPadTest(binTest2);
+
+  // The first byte of someMemberAtTheBegining forces to consume
+  // a full testArray element before it (for padding)
+  const expectedSize =
+    ((length + 1) * type.bytes)  // First byte + First padded array
+    + (length * type1Byte.bytes) // Second array
+    + 1;                         // Last byte
+  expect(BinaryPadTest.binarySize).toBe(expectedSize);
+
+  // 1 byte array is automatically optimized (without `padding=true`)
+  expect(testObj.testArray1Byte).toBeInstanceOf(type1Byte.extractor);
+
+  // Test bound TypedArray values
+  const expectedArr = new Array(length).fill(0);
+  const arr = testObj.testArray;
+  expect(arr).toBeInstanceOf(type.extractor);
+  expect([...arr]).toEqual(expectedArr);
+
+  // Fill first value with binary 1's
+  const max = eval("0x"+'ff'.repeat(type.bytes));
+  arr[0] = max;
+  expectedArr[0] = max;
+  expect([...arr]).toEqual(expectedArr);
+
+  // Original data has also been modified
+  expect([...testObj.testArray]).toEqual(expectedArr);
+
+  // Check that the bytes on the buffer have been filled
+  for(let i = 0; i < type.bytes; i++) {
+    expect( testObj.getByteAt(i + type.bytes) ).toBe(255);
+  }
+
+  // Test typecasting
+  arr[0] = 1;
+  expectedArr[0] = 1;
+  expect([...arr]).toEqual(expectedArr);
+
+  // Test full array assignment
+  testObj.testArray = [1,1,1];
+  expect([...arr]).toEqual([1,1,1,0,0]);
+
+  // Test array overflow on full assignment throws RangeError
+  expect(() => {
+    testObj.testArray = new Array(length+1).fill(0);
+  }).toThrow(RangeError);
+
+  // Test array overflow by index does nothing
+  expect( testObj.testArray[length] ).toBe(undefined);
+  testObj.testArray[length] = 1;
+  expect( testObj.testArray[length] ).toBe(undefined);
 });
 
 test("Class inheritance works", () => {
@@ -359,6 +437,21 @@ test("Profile a natural object against a binary object", () => {
   });
 
   testObjList('Binary Object', bObjList);
+
+  //
+  // Binary Object with pre-created DataView
+  //
+  gc();
+  let binTest3, dv3, bDvObjList;
+  testProfile('Binary Object with pre-created DataView alloc memory', () => {
+    binTest3 = new ArrayBuffer(BinaryTest.binarySize * iterations);
+    dv3 = new DataView(binTest3);
+  });
+  testProfile('Binary Object with pre-created DataView instantation', () => {
+    bDvObjList = BinaryTest.arrayFactory(dv3, iterations);
+  });
+
+  testObjList('Binary Object with pre-created DataView', bDvObjList);
 
   //
   // Binary Object
