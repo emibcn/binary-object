@@ -78,18 +78,7 @@
     browserslist "^4.14.5"
     semver "^6.3.0"
 
-"@babel/helper-create-class-features-plugin@^7.12.13":
-  version "7.12.13"
-  resolved "https://registry.yarnpkg.com/@babel/helper-create-class-features-plugin/-/helper-create-class-features-plugin-7.12.13.tgz#0f1707c2eec1a4604f2a22a6fb209854ef2a399a"
-  integrity sha512-Vs/e9wv7rakKYeywsmEBSRC9KtmE7Px+YBlESekLeJOF0zbGUicGfXSNi3o+tfXSNS48U/7K9mIOOCR79Cl3+Q==
-  dependencies:
-    "@babel/helper-function-name" "^7.12.13"
-    "@babel/helper-member-expression-to-functions" "^7.12.13"
-    "@babel/helper-optimise-call-expression" "^7.12.13"
-    "@babel/helper-replace-supers" "^7.12.13"
-    "@babel/helper-split-export-declaration" "^7.12.13"
-
-"@babel/helper-create-class-features-plugin@^7.13.0", "@babel/helper-create-class-features-plugin@^7.14.0":
+"@babel/helper-create-class-features-plugin@^7.13.0", "@babel/helper-create-class-features-plugin@^7.14.0", "@babel/helper-create-class-features-plugin@^7.14.2":
   version "7.14.2"
   resolved "https://registry.yarnpkg.com/@babel/helper-create-class-features-plugin/-/helper-create-class-features-plugin-7.14.2.tgz#4e455b0329af29c2d3ad254b5dd5aed34595385d"
   integrity sha512-6YctwVsmlkchxfGUogvVrrhzyD3grFJyluj5JgDlQrwfMLJSt5tdAzFZfPf4H2Xoi5YLcQ6BxfJlaOBHuctyIw==
@@ -375,12 +364,12 @@
     "@babel/plugin-syntax-class-static-block" "^7.12.13"
 
 "@babel/plugin-proposal-decorators@^7.12.13":
-  version "7.12.13"
-  resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-decorators/-/plugin-proposal-decorators-7.12.13.tgz#d4c89b40c2b7a526b0d394de4f4def36191e413e"
-  integrity sha512-x2aOr5w4ARJoYHFKoG2iEUL/Xe99JAJXjAasHijXp3/KgaetJXGE62SmHgsW3Tia/XUT5AxF2YC0F+JyhPY/0Q==
+  version "7.14.2"
+  resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-decorators/-/plugin-proposal-decorators-7.14.2.tgz#e68c3c5e4a6a08834456568256fc3e71b93590cf"
+  integrity sha512-LauAqDd/VjQDtae58QgBcEOE42NNP+jB2OE+XeC3KBI/E+BhhRjtr5viCIrj1hmu1YvrguLipIPRJZmS5yUcFw==
   dependencies:
-    "@babel/helper-create-class-features-plugin" "^7.12.13"
-    "@babel/helper-plugin-utils" "^7.12.13"
+    "@babel/helper-create-class-features-plugin" "^7.14.2"
+    "@babel/helper-plugin-utils" "^7.13.0"
     "@babel/plugin-syntax-decorators" "^7.12.13"
 
 "@babel/plugin-proposal-dynamic-import@^7.14.2":
