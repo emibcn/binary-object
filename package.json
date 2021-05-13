@@ -92,6 +92,10 @@
       "<rootDir>/{src,dist}/**/*.{spec,test}.{js,jsx,ts,tsx}"
     ]
   },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
   "devDependencies": {
     "@babel/core": "^7.0.0-0",
     "@babel/plugin-proposal-class-properties": "^7.12.13",
