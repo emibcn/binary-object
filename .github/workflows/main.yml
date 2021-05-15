@@ -30,7 +30,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - uses: actions/setup-node@v1
+    - uses: actions/setup-node@v2.1.5
       with:
         node-version: ${{ matrix.node }}
 
@@ -140,7 +140,7 @@ jobs:
     needs: [test]
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2.1.5
         with:
           node-version: 14.x
 
@@ -173,7 +173,7 @@ jobs:
     if: ${{ ( github.event_name == 'pull_request' && github.event.pull_request.merged == true ) || github.ref == 'refs/heads/main' }}
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2.1.5
         with:
           node-version: 14.x
 
