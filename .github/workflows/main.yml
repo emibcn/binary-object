@@ -15,7 +15,6 @@ on:
   pull_request:
     branches: [ main ]
 
-
 jobs:
 
   test:
@@ -23,6 +22,12 @@ jobs:
     strategy:
       matrix:
         node: [14]
+
+    # Map a step output to a job output
+    outputs:
+      coverage: ${{ steps.coverage.outputs.coverage }}
+      coverage-rounded-display: ${{ steps.coverage.outputs.coverage-rounded-display }}
+
     steps:
     - uses: actions/checkout@v1
     - uses: actions/setup-node@v1
@@ -59,6 +64,20 @@ jobs:
         rounded-precision: 2
         filename: "coverage/clover.xml"
 
+  badge:
+
+    # Only generate and publish if these conditions are met:
+    # - The test step ended successfully
+    # - One of these is met:
+    #   - This is a pull request event and the pull actor is the same as the repo owner
+    #   - This is a push event and the push event is on branch 'main'
+    needs: test
+    if: ${{ ( github.event_name == 'pull_request' && github.actor == github.repository_owner ) || github.ref == 'refs/heads/main' }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+
     - name: Extract branch name
       shell: bash
       run: |
@@ -75,32 +94,29 @@ jobs:
       id: extract_branch
 
     - uses: actions/checkout@v2
-      if: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/main' }}
       with:
         ref: badges
 
     # Use the output from the `coverage` step
     - name: Generate the badge SVG image
-      if: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/main' }}
-      uses: emibcn/badge-action@v1
+      uses: emibcn/badge-action@v1.1
       id: badge
       with:
         label: 'Coverage'
-        status: ${{ steps.coverage.outputs.coverage-rounded-display }}
+        status: ${{ needs.test.outputs.coverage-rounded-display }}
         color: ${{
-          steps.coverage.outputs.coverage > 90 && 'green'              ||
-          steps.coverage.outputs.coverage > 80 && 'yellow,green'       ||
-          steps.coverage.outputs.coverage > 70 && 'yellow'             ||
-          steps.coverage.outputs.coverage > 60 && 'orange,yellow'      ||
-          steps.coverage.outputs.coverage > 50 && 'orange'             ||
-          steps.coverage.outputs.coverage > 40 && 'red,orange'         ||
-          steps.coverage.outputs.coverage > 30 && 'red,red,orange'     ||
-          steps.coverage.outputs.coverage > 20 && 'red,red,red,orange' ||
+          needs.test.outputs.coverage > 90 && 'green'              ||
+          needs.test.outputs.coverage > 80 && 'yellow,green'       ||
+          needs.test.outputs.coverage > 70 && 'yellow'             ||
+          needs.test.outputs.coverage > 60 && 'orange,yellow'      ||
+          needs.test.outputs.coverage > 50 && 'orange'             ||
+          needs.test.outputs.coverage > 40 && 'red,orange'         ||
+          needs.test.outputs.coverage > 30 && 'red,red,orange'     ||
+          needs.test.outputs.coverage > 20 && 'red,red,red,orange' ||
           'red' }}
         path: test-coverage.svg
 
     - name: Commit badge
-      if: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/main' }}
       env:
         BRANCH: ${{ steps.extract_branch.outputs.branch }}
         FILE: 'test-coverage.svg'
@@ -114,7 +130,6 @@ jobs:
         # Will give error if badge did not changed
         git commit -m "Add/Update badge" || true
     - name: Push badge commit
-      if: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/main' }}
       uses: ad-m/github-push-action@master
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -152,10 +167,10 @@ jobs:
         run: yarn test-build --color
         shell: bash
 
-
   docs:
     runs-on: ubuntu-20.04
-    needs: [test]
+    needs: [build]
+    if: ${{ ( github.event_name == 'pull_request' && github.event.pull_request.merged == true ) || github.ref == 'refs/heads/master' }}
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-node@v1
