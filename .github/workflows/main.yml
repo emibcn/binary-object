@@ -50,7 +50,7 @@ jobs:
       shell: bash
 
     - name: test + coverage
-      run: yarn test-coverage --color || true
+      run: yarn test-coverage --color
       shell: bash
 
     # Coverage badges will be updated on any branch
