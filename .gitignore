@@ -1,6 +1,6 @@
 # Editors
 *~
-.*.swp
+.*.sw*
 
 # Built
 dist

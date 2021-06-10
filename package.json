@@ -3,8 +3,10 @@
   "version": "1.1.4",
   "description": "Manage binary data with JavaScript strictly typed Object-oriented programming",
   "main": "dist/index.js",
-  "module": "src/index.js",
+  "module": "dist/index.modern.js",
+  "source": "src/index.js",
   "repository": "git://github.com/emibcn/binary-object",
+  "homepage": "https://github.com/emibcn/binary-object",
   "author": "github.com/emibcn",
   "sideEffects": false,
   "keywords": [
@@ -20,98 +22,78 @@
     "ObjectBuffer",
     "BinaryObject"
   ],
-  "homepage": "https://github.com/emibcn/binary-object",
+  "engines": {
+    "node": ">=10"
+  },
   "bugs": {
     "url": "https://github.com/emibcn/binary-object/issues"
   },
   "license": "GPL-3.0-or-later",
   "private": false,
   "scripts": {
-    "build-clean": "rm -Rf dist/ ; mkdir dist/",
-    "build": "yarn build-clean && webpack",
-    "test-basic": "node_modules/.bin/jest $([ -z ${CI} ] && echo '--watchAll') --verbose -w1",
-    "test": "yarn test-basic src/index.test.js",
-    "test-inspect": "NODE_OPTIONS='--inspect' node_modules/.bin/jest --watchAll --verbose -w1 src/index.test.js",
-    "test-coverage": "yarn build-clean && node node_modules/.bin/jest --coverage --verbose -w1 src/index.test.js",
-    "test-coverage-html": "node --expose-gc node_modules/.bin/jest --coverage --coverageReporters=html --watchAll --verbose -w1 src/index.test.js",
+    "build": "microbundle-crl --no-compress --format modern,cjs",
+    "clean": "rm -Rf dist/ coverage/ doc/",
+    "start": "microbundle-crl watch --no-compress --format modern,cjs",
+    "prepare": "run-s build",
+    "test": "run-s test:unit test:build-test # test:lint",
+    "test:build": "run-s build",
+    "test:build-test": "run-s test-build",
+    "test:lint": "eslint .",
+    "test:unit": "cross-env CI=1 run-s test-coverage",
+    "test:unit-html": "yarn test:unit --coverageReporters=html",
+    "test:watch": "run-s test-coverage",
+    "test-basic": "node $([ -z ${EXPOSE_GC} ] || echo '--expose-gc') node_modules/.bin/jest $([ -z ${CI} ] && echo '--watchAll') --verbose -w1 --color",
+    "test-src": "yarn test-basic src/index.test.js",
+    "test-expose": "cross-env EXPOSE_GC=1 yarn test-src",
+    "test-inspect": "cross-env NODE_OPTIONS='--inspect' yarn test-src",
+    "test-inspect-expose": "cross-env NODE_OPTIONS='--inspect' EXPOSE_GC=1 yarn test-src",
+    "test-coverage": "yarn test-src --coverage",
+    "test-coverage-html": "yarn test-coverage --coverageReporters=html",
     "test-build-prepare": "cp src/*.test.* src/TextEncoder-polyfill.js dist/",
-    "test-build": "yarn build && yarn test-build-prepare && yarn test-basic dist/index.test.js",
-    "package": "CI=true np --color --preview --branch main --no2fa",
-    "package-force": "CI=true np --color --branch main --no2fa",
+    "test-dist": "yarn test-basic dist/index.test.js",
+    "test-build": "run-s build test-build-prepare test-dist clean",
+    "deploy": "CI=true np --color --preview",
+    "deploy-force": "CI=true np --color",
     "mkdocs": "yarn jsdoc -c jsdoc.json src -d doc"
   },
-  "babel": {
-    "presets": [
-      "@babel/preset-env"
-    ],
-    "plugins": [
-      "@babel/plugin-transform-runtime",
-      [
-        "@babel/plugin-proposal-decorators",
+  "jest": {
+    "transform": {
+      "^.+\\.(js|jsx|mjs|cjs|ts|tsx)$": [
+        "babel-jest",
         {
-          "legacy": true
-        }
-      ],
-      [
-        "@babel/plugin-proposal-class-properties",
-        {
-          "loose": true
+          "configFile": "./babelrc.test.js"
         }
       ]
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "jest": {
-    "roots": [
-      "<rootDir>/src",
-      "<rootDir>/dist"
-    ],
-    "collectCoverageFrom": [
-      "src/**/*.{js,ts}"
-    ],
-    "testRunner": "<rootDir>/node_modules/jest-circus/runner.js",
-    "transform": {
-      "^.+\\.(js|jsx|mjs|cjs|ts|tsx)$": "<rootDir>/node_modules/babel-jest"
-    },
-    "transformIgnorePatterns": [
-      "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|mjs|cjs|ts|tsx)$",
-      "^.+\\.module\\.(css|sass|scss)$"
-    ],
-    "testMatch": [
-      "<rootDir>/{src,dist}/**/__tests__/**/*.{js,jsx,ts,tsx}",
-      "<rootDir>/{src,dist}/**/*.{spec,test}.{js,jsx,ts,tsx}"
-    ]
+    }
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org",
     "access": "public"
   },
   "devDependencies": {
-    "@babel/core": "^7.0.0-0",
-    "@babel/plugin-proposal-class-properties": "^7.12.13",
-    "@babel/plugin-proposal-decorators": "^7.12.13",
-    "@babel/plugin-transform-runtime": "^7.12.13",
-    "@babel/preset-env": "^7.12.13",
-    "babel-loader": "^8.2.2",
-    "jest": "^27.0.1",
-    "jest-circus": "^27.0.1",
+    "@babel/plugin-proposal-decorators": "^7.14.5",
+    "@babel/plugin-transform-runtime": "^7.14.5",
+    "babel-jest": "^27.0.2",
+    "cross-env": "^7.0.3",
+    "eslint": "^7.23.0",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-promise": "^5.1.0",
+    "eslint-plugin-standard": "^5.0.0",
+    "jest": "^27.0.4",
     "jsdoc": "^3.6.6",
-    "util": "^0.12.3",
-    "webpack": "^5.20.1",
-    "webpack-cli": "^4.5.0"
+    "microbundle-crl": "^0.13.11",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.2.1",
+    "util": "^0.12.3"
   },
   "dependencies": {
     "core-decorators": "^0.20.0"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }

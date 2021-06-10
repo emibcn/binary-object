@@ -1,6 +1,5 @@
 # Editors
-*.swp
-.*.swp
+.*.sw*
 *~
 
 # Repo
@@ -25,9 +24,10 @@ start-ssh.sh
 # Development, test and build assets
 coverage
 doc
-webpack.config.js
+babelrc.test.js
 jsdoc.json
 src/index.test.js
 src/TextEncoder-polyfill.js
 dist/index.test.js
 dist/TextEncoder-polyfill.js
+.eslint*
