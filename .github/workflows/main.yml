@@ -49,7 +49,7 @@ jobs:
       run: yarn --color --immutable
 
     - name: test + coverage
-      run: yarn test-coverage --color
+      run: yarn test:unit
 
     # Coverage badges will be updated on any branch
     # and saved into a dedicated one
@@ -132,7 +132,7 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         branch: badges
 
-  build:
+  test-build:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2.3.4
@@ -154,15 +154,12 @@ jobs:
       - name: yarn install
         run: yarn --immutable
 
-      - name: build
-        run: yarn build
-
       - name: test build
-        run: yarn test-build --color
+        run: yarn test:build-test
 
   docs:
     runs-on: ubuntu-20.04
-    needs: [test, build]
+    needs: [test, test-build]
     if: ${{ ( github.event_name == 'pull_request' && github.event.pull_request.merged == true ) || github.ref == 'refs/heads/main' }}
     steps:
       - uses: actions/checkout@v2.3.4
