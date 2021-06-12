@@ -31,7 +31,7 @@
   "license": "GPL-3.0-or-later",
   "private": false,
   "scripts": {
-    "build": "microbundle --no-compress --format modern,cjs",
+    "build": "microbundle --compress --format modern,cjs",
     "clean": "rm -Rf dist/ coverage/ doc/",
     "start": "microbundle watch --no-compress --format modern,cjs",
     "prepare": "run-s build",
