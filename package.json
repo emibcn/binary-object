@@ -90,9 +90,7 @@
     "prettier": "^2.2.1",
     "util": "^0.12.3"
   },
-  "dependencies": {
-    "core-decorators": "^0.20.0"
-  },
+  "dependencies": {},
   "files": [
     "dist"
   ]

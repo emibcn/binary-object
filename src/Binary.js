@@ -1,5 +1,5 @@
 // Not efficient enough...
-import { nonenumerable } from 'core-decorators';
+//import { nonenumerable } from 'core-decorators';
 
 import Types from './Types';
 
