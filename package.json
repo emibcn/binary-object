@@ -31,9 +31,9 @@
   "license": "GPL-3.0-or-later",
   "private": false,
   "scripts": {
-    "build": "microbundle-crl --no-compress --format modern,cjs",
+    "build": "microbundle --no-compress --format modern,cjs",
     "clean": "rm -Rf dist/ coverage/ doc/",
-    "start": "microbundle-crl watch --no-compress --format modern,cjs",
+    "start": "microbundle watch --no-compress --format modern,cjs",
     "prepare": "run-s build",
     "test": "run-s test:unit test:build-test # test:lint",
     "test:build": "run-s build",
@@ -85,7 +85,7 @@
     "eslint-plugin-standard": "^5.0.0",
     "jest": "^27.0.4",
     "jsdoc": "^3.6.6",
-    "microbundle-crl": "^0.13.11",
+    "microbundle": "^0.13.3",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.2.1",
     "util": "^0.12.3"
