@@ -1,11 +1,10 @@
 // Not efficient enough...
 //import { nonenumerable } from 'core-decorators';
 
-import Types from './Types';
+import Types from "./Types";
 
 /** Class allowing `@binary` members */
 class Binary {
-
   // TODO:
   //  - Handle Endianess
   //  - Handle Clamped
@@ -18,7 +17,9 @@ class Binary {
    * Static getter for the class binary size
    * @return {number} - The class binary size
    */
-  static get binarySize() { return this._size }
+  static get binarySize() {
+    return this._size;
+  }
 
   //@nonenumerable
   static _binaryProps;
@@ -26,7 +27,9 @@ class Binary {
    * Static getter for the class binary props
    * @return {array} - The list of binary props
    */
-  static get binaryProps() { return this._binaryProps }
+  static get binaryProps() {
+    return this._binaryProps;
+  }
 
   /**
    * Fills an array with objects of this class using a unique buffer
@@ -37,17 +40,15 @@ class Binary {
    * @return {array} - The array {@link list} where the objects have been added
    */
   //@nonenumerable
-  static arrayFactory(binOrDV, length, initialOffset=0, list=[]) {
+  static arrayFactory(binOrDV, length, initialOffset = 0, list = []) {
     // Optimize: Generate a single DataView for all elements
-    const dv = binOrDV instanceof DataView
-      ? binOrDV
-      : new DataView(binOrDV)
+    const dv = binOrDV instanceof DataView ? binOrDV : new DataView(binOrDV);
 
-    for(let i = 0; i < length; i++) {
+    for (let i = 0; i < length; i++) {
       list.push(new this(dv, initialOffset + this._size * i));
     }
 
-    return list
+    return list;
   }
 
   // Prototype props
@@ -63,9 +64,11 @@ class Binary {
    */
   //@nonenumerable
   get _dv() {
-    this.__dv = this?.__dv ?? new DataView(this._bin, this._initialOffset, this.constructor._size)
-    return this.__dv
-  };
+    this.__dv =
+      this?.__dv ??
+      new DataView(this._bin, this._initialOffset, this.constructor._size);
+    return this.__dv;
+  }
 
   /**
    * Transform this object into a JSON string containing all the binary members
@@ -73,12 +76,13 @@ class Binary {
    * @method
    */
   //@nonenumerable
-  toJSON = () => this.constructor._binaryProps
-    .reduce( (acc, prop) => ({
+  toJSON = () =>
+    this.constructor._binaryProps.reduce(
+      (acc, prop) => ({
         ...acc,
         [prop]: this[prop],
       }),
-      {},
+      {}
     );
 
   /**
@@ -87,14 +91,13 @@ class Binary {
    * @param {number} initialOffset - Buffer offset before this object data start
    * @param {boolean} isLazy - If true and {@link binOrDv} is not a {DataView}, wait until first acces before Instantiating the __dv
    */
-  constructor(binOrDV, initialOffset=0, isLazy=true) {
+  constructor(binOrDV, initialOffset = 0, isLazy = true) {
     this._initialOffset = initialOffset;
-    if(binOrDV instanceof DataView) {
+    if (binOrDV instanceof DataView) {
       this.__dv = binOrDV;
-    }
-    else {
+    } else {
       this._bin = binOrDV;
-      if(!isLazy) {
+      if (!isLazy) {
         this._dv; // Call getter
       }
     }
@@ -107,7 +110,8 @@ class Binary {
    * @method
    */
   //@nonenumerable
-  getByteAt = (offset) => Types.Uint8.get(this._dv, this._initialOffset + offset);
+  getByteAt = (offset) =>
+    Types.Uint8.get(this._dv, this._initialOffset + offset);
 }
 
 /*

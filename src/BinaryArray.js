@@ -19,11 +19,11 @@ class BinaryArrayBase {
    * @param {number} length - The length of the array
    */
   constructor(dv, type, offset, length) {
-    this.type   = type;
-    this.dv     = dv;
+    this.type = type;
+    this.dv = dv;
     this.offset = offset;
     this.length = length;
-    this.bytes  = length * type.bytes;
+    this.bytes = length * type.bytes;
   }
 
   /**
@@ -40,7 +40,7 @@ class BinaryArrayBase {
    * @return {string} - The JSON string representing this array
    * @method
    */
-  toJSON = () => JSON.parse(JSON.stringify( this.map() ));
+  toJSON = () => JSON.parse(JSON.stringify(this.map()));
 
   /**
    * Make a generator iterator
@@ -52,16 +52,18 @@ class BinaryArrayBase {
    */
   *[Symbol.iterator]() {
     // Deconstruct to optimize and ease reading
-    const {length, dv, offset, type: {get, bytes} } = this;
+    const {
+      length,
+      dv,
+      offset,
+      type: { get, bytes },
+    } = this;
 
     // Use a new index for each iterator. This makes multiple
     // iterations over the iterable safe for non-trivial cases,
     // such as use of break or nested looping over the same iterable.
-    for(let index = 0; index < length; index++) {
-      yield get(
-          dv,
-          offset + (bytes * index)
-        )
+    for (let index = 0; index < length; index++) {
+      yield get(dv, offset + bytes * index);
     }
   }
 }
@@ -71,7 +73,6 @@ class BinaryArrayBase {
  * @enum
  */
 const BinaryArrayHandler = {
-
   /**
    * Getter for the elements of the handled {@link BinaryArray}
    * @param {BinaryArray} target - The handled {@link BinaryArray} instance
@@ -83,17 +84,14 @@ const BinaryArrayHandler = {
     // Need to:
     //  - Override Array internals, but are private
     //  - Override `[]` operator, but it's not possible
-    if (prop === '0' || (
-          typeof prop === 'string' &&
-          Number(prop) > 0
-       )
-    ) {
+    if (prop === "0" || (typeof prop === "string" && Number(prop) > 0)) {
       // Destructure to optimize
-      const {dv, offset, type: {get, bytes}} = target;
-      return get(
+      const {
         dv,
-        offset + (bytes * Number(prop))
-      )
+        offset,
+        type: { get, bytes },
+      } = target;
+      return get(dv, offset + bytes * Number(prop));
     }
 
     // Return original value
@@ -108,39 +106,35 @@ const BinaryArrayHandler = {
    * @return {boolean} - If {@link prop} is numericalish, true (as needed for JS setters), else the return value from the {@link target} reflected setter
    */
   set(target, prop, value) {
-    if (prop === '0' || (
-          typeof prop === 'string' &&
-          Number(prop) > 0
-       )
-    ) {
+    if (prop === "0" || (typeof prop === "string" && Number(prop) > 0)) {
       // Destructure to optimize
-      const {dv, offset, type: {set, bytes}} = target;
-      set(
+      const {
         dv,
-        offset + (bytes * Number(prop)),
-        value
-      );
+        offset,
+        type: { set, bytes },
+      } = target;
+      set(dv, offset + bytes * Number(prop), value);
       return true;
     }
     return Reflect.set(target, prop, value);
   },
-}
+};
 
 // #TODO: BUG: Argument Spread Operator not working
 //             well when packing with webpack
 /**
  * Proxy creator for {@link BinaryArrayBase}
-   * @param {DataView} dv - The DataView handling the buffer where the data lives
-   * @param {object} type - The type of the array members from {@link Types}
-   * @param {number} offset - The offset before the first member of the array
-   * @param {number} length - The length of the array
-   * @return {Proxy} - The proxy to {@link BinaryArrayBase} with {@link BinaryArrayHandler} as proxy handler
-   */
+ * @param {DataView} dv - The DataView handling the buffer where the data lives
+ * @param {object} type - The type of the array members from {@link Types}
+ * @param {number} offset - The offset before the first member of the array
+ * @param {number} length - The length of the array
+ * @return {Proxy} - The proxy to {@link BinaryArrayBase} with {@link BinaryArrayHandler} as proxy handler
+ */
 const BinaryArray = (dv, type, offset, length) => {
   return new Proxy(
     new BinaryArrayBase(dv, type, offset, length),
     BinaryArrayHandler
   );
-}
+};
 
 export default BinaryArray;
