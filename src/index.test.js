@@ -1,7 +1,7 @@
 "use strict";
 
-import './TextEncoder-polyfill';
-import {Binary, binary, withBinary, Types} from './index.js';
+import "./TextEncoder-polyfill";
+import { Binary, binary, withBinary, Types } from "./index.js";
 
 class BinaryTest extends Binary {
   @binary(Types.Uint32)
@@ -19,7 +19,7 @@ const proxyObject = new BinaryTest(binTest);
 
 test("Change property nature (re-define prototype properties) throws error", () => {
   expect(() => {
-    Object.defineProperty(BinaryTest.prototype, 'id', {
+    Object.defineProperty(BinaryTest.prototype, "id", {
       get: () => 42,
     });
   }).toThrow(TypeError);
@@ -28,9 +28,7 @@ test("Change property nature (re-define prototype properties) throws error", () 
 test("Binary size is exact (no padding)", () => {
   // No padding done (nor needed...)
   const expectedSize =
-    Types.Uint32.bytes
-    + Types.Float64.bytes
-    + Types.Float32.bytes * 10;
+    Types.Uint32.bytes + Types.Float64.bytes + Types.Float32.bytes * 10;
   expect(BinaryTest.binarySize).toBe(expectedSize);
 });
 
@@ -97,16 +95,40 @@ test("Get and set properties in arrays", () => {
 
   // Test adding custom prop to array object
   testArray.someThing = "something else";
-  expect( testArray.someThing ).toBe("something else");
+  expect(testArray.someThing).toBe("something else");
 
   // Map methods
-  const mapped = testArray.map( (v, i) => [v, i]);
-  expect(mapped).toEqual([[1, 0],[2, 1],[0, 2],[0, 3],[0, 4],[0, 5],[0, 6],[0, 7],[0, 8], [0, 9]]);
-  const reduced = testArray.map().reduce( (acc, v, i) => ({...acc, [`i${i}`]: v}), {});
-  expect(reduced).toEqual({ i0: 1, i1: 2, i2: 0, i3: 0, i4: 0, i5: 0, i6: 0, i7: 0, i8: 0, i9: 0 });
+  const mapped = testArray.map((v, i) => [v, i]);
+  expect(mapped).toEqual([
+    [1, 0],
+    [2, 1],
+    [0, 2],
+    [0, 3],
+    [0, 4],
+    [0, 5],
+    [0, 6],
+    [0, 7],
+    [0, 8],
+    [0, 9],
+  ]);
+  const reduced = testArray
+    .map()
+    .reduce((acc, v, i) => ({ ...acc, [`i${i}`]: v }), {});
+  expect(reduced).toEqual({
+    i0: 1,
+    i1: 2,
+    i2: 0,
+    i3: 0,
+    i4: 0,
+    i5: 0,
+    i6: 0,
+    i7: 0,
+    i8: 0,
+    i9: 0,
+  });
 
   // Modify full array
-  const newArr = [1,0,0,0,0,0,0,0,0,1];
+  const newArr = [1, 0, 0, 0, 0, 0, 0, 0, 0, 1];
   proxyObject.testFloatArray = newArr;
   expect([...testArray]).toEqual(newArr);
 });
@@ -127,9 +149,9 @@ test("Test non padded array", () => {
   }
 
   const expectedSize =
-    1                            // First byte
-    + (length * type.bytes)      // Not padded array
-    + 1;                         // Last byte
+    1 + // First byte
+    length * type.bytes + // Not padded array
+    1; // Last byte
   expect(BinaryNoPadTest.binarySize).toBe(expectedSize);
 });
 
@@ -159,9 +181,9 @@ test("Test padded array", () => {
   // The first byte of someMemberAtTheBegining forces to consume
   // a full testArray element before it (for padding)
   const expectedSize =
-    ((length + 1) * type.bytes)  // First byte + First padded array
-    + (length * type1Byte.bytes) // Second array
-    + 1;                         // Last byte
+    (length + 1) * type.bytes + // First byte + First padded array
+    length * type1Byte.bytes + // Second array
+    1; // Last byte
   expect(BinaryPadTest.binarySize).toBe(expectedSize);
 
   // 1 byte array is automatically optimized (without `padding=true`)
@@ -174,7 +196,7 @@ test("Test padded array", () => {
   expect([...arr]).toEqual(expectedArr);
 
   // Fill first value with binary 1's
-  const max = eval("0x"+'ff'.repeat(type.bytes));
+  const max = eval("0x" + "ff".repeat(type.bytes));
   arr[0] = max;
   expectedArr[0] = max;
   expect([...arr]).toEqual(expectedArr);
@@ -183,8 +205,8 @@ test("Test padded array", () => {
   expect([...testObj.testArray]).toEqual(expectedArr);
 
   // Check that the bytes on the buffer have been filled
-  for(let i = 0; i < type.bytes; i++) {
-    expect( testObj.getByteAt(i + type.bytes) ).toBe(255);
+  for (let i = 0; i < type.bytes; i++) {
+    expect(testObj.getByteAt(i + type.bytes)).toBe(255);
   }
 
   // Test typecasting
@@ -193,18 +215,18 @@ test("Test padded array", () => {
   expect([...arr]).toEqual(expectedArr);
 
   // Test full array assignment
-  testObj.testArray = [1,1,1];
-  expect([...arr]).toEqual([1,1,1,0,0]);
+  testObj.testArray = [1, 1, 1];
+  expect([...arr]).toEqual([1, 1, 1, 0, 0]);
 
   // Test array overflow on full assignment throws RangeError
   expect(() => {
-    testObj.testArray = new Array(length+1).fill(0);
+    testObj.testArray = new Array(length + 1).fill(0);
   }).toThrow(RangeError);
 
   // Test array overflow by index does nothing
-  expect( testObj.testArray[length] ).toBe(undefined);
+  expect(testObj.testArray[length]).toBe(undefined);
   testObj.testArray[length] = 1;
-  expect( testObj.testArray[length] ).toBe(undefined);
+  expect(testObj.testArray[length]).toBe(undefined);
 });
 
 test("Class inheritance works", () => {
@@ -229,20 +251,22 @@ test("Class inheritance works", () => {
   expect([...testChild.testFloatArray]).toEqual(newArr);
 
   // Child members are at the end: test last byte change
-  expect(testChild.getByteAt(BinaryChildTest.binarySize-1)).toBe(0);
+  expect(testChild.getByteAt(BinaryChildTest.binarySize - 1)).toBe(0);
   testChild.someMemberAtTheEnd = 255;
-  expect(testChild.getByteAt(BinaryChildTest.binarySize-1)).toBe(255);
+  expect(testChild.getByteAt(BinaryChildTest.binarySize - 1)).toBe(255);
 });
 
 test("Get and set properties in nested structs", () => {
   class BinaryNestedTest extends Binary {
     @binary(Types.Struct(BinaryTest))
     testNested;
-  
-    get id() { return this.testNested.id }
+
+    get id() {
+      return this.testNested.id;
+    }
     set id(value) {
       this.testNested.id = value;
-      return true
+      return true;
     }
 
     @binary(Types.Uint32)
@@ -261,25 +285,31 @@ test("Get and set properties in nested structs", () => {
 
   // Modify nested last array element
   const length = proxyNested.testNested.testFloatArray.length;
-  proxyNested.testNested.testFloatArray[length-1] = 5;
+  proxyNested.testNested.testFloatArray[length - 1] = 5;
   proxyNested.someNumber = 1;
   expect(proxyNested.someNumber).toBe(1);
-  expect([...proxyNested.testNested.testFloatArray]).toEqual([0,0,0,0,0,0,0,0,0,5]);
+  expect([...proxyNested.testNested.testFloatArray]).toEqual([
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 5,
+  ]);
 
   // Modify full nested' array
-  proxyNested.testNested = {testFloatArray: [0,0,0,0,0,0,0,0,0,1]};
-  expect([...proxyNested.testNested.testFloatArray]).toEqual([0,0,0,0,0,0,0,0,0,1]);
+  proxyNested.testNested = { testFloatArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1] };
+  expect([...proxyNested.testNested.testFloatArray]).toEqual([
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+  ]);
 });
 
 test("Get and set properties in nested array of structs and nested JSON fully works", () => {
   class BinaryArrayOfNestedTest extends Binary {
     @binary(Types.Array(Types.Struct(BinaryTest), 3))
     testNested;
-  
-    get id() { return this.testNested[0].id }
+
+    get id() {
+      return this.testNested[0].id;
+    }
     set id(value) {
       this.testNested[0].id = value;
-      return true
+      return true;
     }
 
     @binary(Types.Uint32)
@@ -295,14 +325,15 @@ test("Get and set properties in nested array of structs and nested JSON fully wo
   expect(proxyNested.id).toBe(12345);
   expect(proxyNested.testNested[0].id).toBe(12345);
 
-  const offset = BinaryTest.binarySize-1+4;
+  const offset = BinaryTest.binarySize - 1 + 4;
   const notModifiedByte = proxyNested.getByteAt(offset);
   expect(notModifiedByte).toBe(0);
   proxyNested.testNested[1].id = 255;
   const modifiedByte = proxyNested.getByteAt(offset);
   expect(modifiedByte).toBe(255);
 
-  const savedJSON = '{"testNested":[{"id":12345,"testFloat":0,"testFloatArray":[0,0,0,0,0,0,0,0,0,0]},{"id":255,"testFloat":0,"testFloatArray":[0,0,0,0,0,0,0,0,0,0]},{"id":0,"testFloat":0,"testFloatArray":[0,0,0,0,0,0,0,0,0,0]}],"someNumber":0}';
+  const savedJSON =
+    '{"testNested":[{"id":12345,"testFloat":0,"testFloatArray":[0,0,0,0,0,0,0,0,0,0]},{"id":255,"testFloat":0,"testFloatArray":[0,0,0,0,0,0,0,0,0,0]},{"id":0,"testFloat":0,"testFloatArray":[0,0,0,0,0,0,0,0,0,0]}],"someNumber":0}';
   expect(JSON.stringify(proxyNested)).toBe(savedJSON);
 });
 
@@ -367,14 +398,16 @@ test("Instantiate an object with a binary data using an initial offset > 0", () 
   expect(proxyObject2.id).toBe(54321);
   expect(proxyObject2.testFloat).toBe(0.3);
 
-  const expectedValues = [1,2,3];
-  const values = expectedValues.map( (_, index) => initialsDV.getInt32(index*4) );
-  expect(values).toEqual( expectedValues );
+  const expectedValues = [1, 2, 3];
+  const values = expectedValues.map((_, index) =>
+    initialsDV.getInt32(index * 4)
+  );
+  expect(values).toEqual(expectedValues);
 });
 
 test("Profile a natural object against a binary object", async () => {
-
-  const sleep = (millis) => new Promise( resolve => setTimeout(resolve, millis));
+  const sleep = (millis) =>
+    new Promise((resolve) => setTimeout(resolve, millis));
 
   let gc = () => {
     global.gc();
@@ -383,7 +416,7 @@ test("Profile a natural object against a binary object", async () => {
     global.gc();
     global.gc();
     global.gc();
-  }
+  };
 
   // Use Node Garbage Collector to profile memory usage more precisely
   try {
@@ -397,8 +430,8 @@ test("Profile a natural object against a binary object", async () => {
   // Natural object to test against
   class NaturalObject {
     id = 0;
-    testFloat = .0;
-    testFloatArray = [.0,.0,.0,.0,.0,.0,.0,.0];
+    testFloat = 0.0;
+    testFloatArray = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
   }
 
   // Lots of iterations to get relevant time lapses
@@ -410,7 +443,7 @@ test("Profile a natural object against a binary object", async () => {
   // Get initial usage before starting the profile
   memory.push({
     usage: process.memoryUsage(),
-    name: 'Start',
+    name: "Start",
   });
 
   // Helper to launch each profile test
@@ -425,41 +458,47 @@ test("Profile a natural object against a binary object", async () => {
       time,
     });
     return ret;
-  }
+  };
 
   const testObjList = async (name, objList) => {
     await testProfile(`${name} modification`, () => {
-      objList.forEach( (obj, id) => { obj.id = id });
-    });
- 
-    const matched = await testProfile(`${name} access`, () => {
-      return objList.every( (obj, id) => id === obj.id );
-    });
-    expect(matched).toBe(true);
- 
-    await testProfile(`${name} access 2nd phase`, () => {
-      objList.every( (obj, id) => id === obj.id );
-    });
- 
-    await testProfile(`${name} modification 2nd phase`, () => {
-      objList.forEach( (obj, id) => { obj.id = id } );
+      objList.forEach((obj, id) => {
+        obj.id = id;
+      });
     });
 
-    if ('testFloatArray' in objList[0]) {
+    const matched = await testProfile(`${name} access`, () => {
+      return objList.every((obj, id) => id === obj.id);
+    });
+    expect(matched).toBe(true);
+
+    await testProfile(`${name} access 2nd phase`, () => {
+      objList.every((obj, id) => id === obj.id);
+    });
+
+    await testProfile(`${name} modification 2nd phase`, () => {
+      objList.forEach((obj, id) => {
+        obj.id = id;
+      });
+    });
+
+    if ("testFloatArray" in objList[0]) {
       await testProfile(`${name} access array element`, () => {
-        objList.every( ({testFloatArray}) => testFloatArray[0] === 0 );
+        objList.every(({ testFloatArray }) => testFloatArray[0] === 0);
       });
 
       await testProfile(`${name} modification array element`, () => {
-        objList.forEach( ({testFloatArray}, id) => testFloatArray[0] = id );
+        objList.forEach(({ testFloatArray }, id) => (testFloatArray[0] = id));
       });
 
       await testProfile(`${name} access array element 2nd phase`, () => {
-        objList.every( ({testFloatArray}, id) => testFloatArray[0] === id );
+        objList.every(({ testFloatArray }, id) => testFloatArray[0] === id);
       });
 
       await testProfile(`${name} modification array element 2nd phase`, () => {
-        objList.forEach( ({testFloatArray}, id) => testFloatArray[0] = id*2 );
+        objList.forEach(
+          ({ testFloatArray }, id) => (testFloatArray[0] = id * 2)
+        );
       });
     }
 
@@ -468,7 +507,7 @@ test("Profile a natural object against a binary object", async () => {
       await sleep(1000);
       gc();
     });
-  }
+  };
 
   gc();
 
@@ -476,44 +515,50 @@ test("Profile a natural object against a binary object", async () => {
   // Natural Object
   //
   const nObjList = []; // new Array(iterations) is much slower
-  await testProfile('Natural Object instantation', () => {
-    for(let i = 0; i < iterations; i++) {
+  await testProfile("Natural Object instantation", () => {
+    for (let i = 0; i < iterations; i++) {
       nObjList.push(new NaturalObject());
     }
   });
 
-  await testObjList('Natural Object', nObjList);
+  await testObjList("Natural Object", nObjList);
 
   //
   // Binary Object
   //
   let bObjList;
-  await testProfile('Binary Object instantation', () => {
+  await testProfile("Binary Object instantation", () => {
     const binTest2 = new ArrayBuffer(BinaryTest.binarySize * iterations);
     bObjList = BinaryTest.arrayFactory(binTest2, iterations);
   });
 
-  await testObjList('Binary Object', bObjList);
+  await testObjList("Binary Object", bObjList);
 
   //
   // Binary Object with pre-created DataView
   //
   let binTest3, dv3, bDvObjList;
-  await testProfile('Binary Object with pre-created DataView alloc memory', () => {
-    binTest3 = new ArrayBuffer(BinaryTest.binarySize * iterations);
-    dv3 = new DataView(binTest3);
-  });
-  await testProfile('Binary Object with pre-created DataView instantation', () => {
-    bDvObjList = BinaryTest.arrayFactory(dv3, iterations);
-  });
+  await testProfile(
+    "Binary Object with pre-created DataView alloc memory",
+    () => {
+      binTest3 = new ArrayBuffer(BinaryTest.binarySize * iterations);
+      dv3 = new DataView(binTest3);
+    }
+  );
+  await testProfile(
+    "Binary Object with pre-created DataView instantation",
+    () => {
+      bDvObjList = BinaryTest.arrayFactory(dv3, iterations);
+    }
+  );
 
-  await testObjList('Binary Object with pre-created DataView', bDvObjList);
+  await testObjList("Binary Object with pre-created DataView", bDvObjList);
 
   //
   // Binary Object with padded array
   //
   let bwpaObjList;
-  await testProfile('Binary Object with padded array instantiation', () => {
+  await testProfile("Binary Object with padded array instantiation", () => {
     class BinaryTestPadded extends Binary {
       @binary(Types.Uint32)
       id = 0;
@@ -529,13 +574,13 @@ test("Profile a natural object against a binary object", async () => {
     bwpaObjList = BinaryTestPadded.arrayFactory(binTest2, iterations);
   });
 
-  await testObjList('Binary Object with padded array', bwpaObjList);
+  await testObjList("Binary Object with padded array", bwpaObjList);
 
   //
   // Binary Object without array
   //
   let bwoaObjList;
-  await testProfile('Binary Object without array instantation', () => {
+  await testProfile("Binary Object without array instantation", () => {
     class BinaryWithoutArrayTest extends Binary {
       @binary(Types.Uint32)
       id = 0;
@@ -545,18 +590,19 @@ test("Profile a natural object against a binary object", async () => {
       showId = () => console.log(`My id is ${this.id}`);
     }
 
-    const binTest2 = new ArrayBuffer(BinaryWithoutArrayTest.binarySize * iterations);
+    const binTest2 = new ArrayBuffer(
+      BinaryWithoutArrayTest.binarySize * iterations
+    );
     bwoaObjList = BinaryWithoutArrayTest.arrayFactory(binTest2, iterations);
   });
 
-  await testObjList('Binary Object without array', bwoaObjList);
+  await testObjList("Binary Object without array", bwoaObjList);
 
   //
   // Binary Object with class decorator
   //
   let bdObjList;
-  await testProfile('Binary Object with class decorator instantation', () => {
-
+  await testProfile("Binary Object with class decorator instantation", () => {
     @withBinary
     class BinaryObjectWithDecorator {
       @binary(Types.Uint32)
@@ -565,65 +611,76 @@ test("Profile a natural object against a binary object", async () => {
       testFloat = 0;
       @binary(Types.Array(Types.Float32, 10))
       testFloatArray;
-  
-      showId = () => console.log(`My id is ${this.id}`);
-    };
 
-    const binTest2 = new ArrayBuffer(BinaryObjectWithDecorator.binarySize * iterations);
+      showId = () => console.log(`My id is ${this.id}`);
+    }
+
+    const binTest2 = new ArrayBuffer(
+      BinaryObjectWithDecorator.binarySize * iterations
+    );
     bdObjList = BinaryObjectWithDecorator.arrayFactory(binTest2, iterations);
   });
 
-  await testObjList('Binary Object with class decorator', bdObjList);
+  await testObjList("Binary Object with class decorator", bdObjList);
 
   //
   // Binary Object with class decorator and padded array
   //
   let bdpObjList;
-  await testProfile('Binary Object with class decorator instantation and padded array', () => {
+  await testProfile(
+    "Binary Object with class decorator instantation and padded array",
+    () => {
+      @withBinary
+      class BinaryObjectWithDecorator {
+        @binary(Types.Uint32)
+        id = 0;
+        @binary(Types.Float64)
+        testFloat = 0;
+        @binary(Types.Array(Types.Float32, 10, true))
+        testFloatArray;
 
-    @withBinary
-    class BinaryObjectWithDecorator {
-      @binary(Types.Uint32)
-      id = 0;
-      @binary(Types.Float64)
-      testFloat = 0;
-      @binary(Types.Array(Types.Float32, 10, true))
-      testFloatArray;
+        showId = () => console.log(`My id is ${this.id}`);
+      }
 
-      showId = () => console.log(`My id is ${this.id}`);
-    };
+      const binTest2 = new ArrayBuffer(
+        BinaryObjectWithDecorator.binarySize * iterations
+      );
+      bdpObjList = BinaryObjectWithDecorator.arrayFactory(binTest2, iterations);
+    }
+  );
 
-    const binTest2 = new ArrayBuffer(BinaryObjectWithDecorator.binarySize * iterations);
-    bdpObjList = BinaryObjectWithDecorator.arrayFactory(binTest2, iterations);
-  });
-
-  await testObjList('Binary Object with class decorator and padded array', bdpObjList);
+  await testObjList(
+    "Binary Object with class decorator and padded array",
+    bdpObjList
+  );
 
   // Show collected metrics in a table
-  const numberWithCommas = (x) => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  const numberWithCommas = (x) =>
+    x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   const memoryDiffTable = memory
-    .map( ({usage, ...rest}, indexMemory) => ({
+    .map(({ usage, ...rest }, indexMemory) => ({
       ...rest,
       ...Object.entries(usage)
         .map(([key, value]) => ({
           key,
           originalValue: value,
-          value: indexMemory === 0
-            ? 0
-            : value - memory[indexMemory - 1].usage[key]
+          value:
+            indexMemory === 0 ? 0 : value - memory[indexMemory - 1].usage[key],
         }))
         .reduce(
-          (acc, {key, value}) => ({
+          (acc, { key, value }) => ({
             ...acc,
             [key]: numberWithCommas(value),
           }),
           {}
         ),
     }))
-  .reduce( (acc, {name, ...rest}) => ({
-    ...acc,
-    [name]: rest,
-  }), {});
+    .reduce(
+      (acc, { name, ...rest }) => ({
+        ...acc,
+        [name]: rest,
+      }),
+      {}
+    );
   console.table(memoryDiffTable);
 }, 6e4);
-

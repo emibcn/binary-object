@@ -1,4 +1,4 @@
-import Types from './Types';
+import Types from './Types'
 
 /**
  * Class member decorator generator for Binary class property
@@ -7,7 +7,7 @@ import Types from './Types';
  * @decorator
  * @method
  */
-const binary = ({bytes, padding=false, get, set}) => {
+const binary = ({ bytes, padding = false, get, set }) => {
   /**
    * The class member generated decorator
    * @param {object} target - object which will be `assign`ed to the Class.prototype (extending {@link Binary} or decorated with {@link withBinary})
@@ -17,28 +17,26 @@ const binary = ({bytes, padding=false, get, set}) => {
    * @method
    * @name decorator
    */
-  return function decorator(target, name, descriptor) {
-    //const deleted = (() => {
+  return function decorator (target, name, descriptor) {
+    // const deleted = (() => {
     //  const {value, initializer, writable} = descriptor;
     //  return {value, initializer, writable};
-    //})();
+    // })();
 
     // Add size as static property to Class
-    target.constructor._size = target.constructor._size ?? 0;
-    target.constructor._binaryProps = target.constructor._binaryProps ?? [];
+    target.constructor._size = target.constructor._size ?? 0
+    target.constructor._binaryProps = target.constructor._binaryProps ?? []
 
     // Create an initial padding offset if needed
-    const size = target.constructor._size;
-    const paddingOffset = padding
-      ? padding - (size % padding)
-      : 0;
+    const size = target.constructor._size
+    const paddingOffset = padding ? padding - (size % padding) : 0
 
     // Get this property offset
-    const offset = target.constructor._size + paddingOffset;
+    const offset = target.constructor._size + paddingOffset
 
     // Add property size to Class size (at static Class property)
-    target.constructor._size += bytes + paddingOffset;
-    target.constructor._binaryProps.push(name);
+    target.constructor._size += bytes + paddingOffset
+    target.constructor._binaryProps.push(name)
 
     /**
      * Property definition returned from {@link binary}'s returned {@link decorator}
@@ -55,7 +53,7 @@ const binary = ({bytes, padding=false, get, set}) => {
        * @this Binary instance
        * @name propertyDescriptorGetter
        */
-      get() {
+      get () {
         return get(this._dv, this._initialOffset + offset)
       },
 
@@ -66,16 +64,15 @@ const binary = ({bytes, padding=false, get, set}) => {
        * @this Binary instance
        * @name propertyDescriptorSetter
        */
-      set(value) {
-        set(this._dv, this._initialOffset + offset, value);
-        return true;
-      },
-    };
+      set (value) {
+        set(this._dv, this._initialOffset + offset, value)
+        return true
+      }
+    }
 
-    return descriptor;
-  };
+    return descriptor
+  }
 }
-
 
 // Using `withBinary` as class decorator is 4x times faster in
 // instantiation (if using @nonenumerable), at the cost of losing some
@@ -96,12 +93,10 @@ const withBinary = (Class) => {
    * @return {@link Class} instance
    * @callback wrapper
    * */
-  const wrapper = (binOrDV, initialOffset=0, ...args) => {
-    const target = new Class(...args);
-    target._dv = (binOrDV instanceof DataView)
-      ? binOrDV
-      : new DataView(binOrDV);
-    target._initialOffset = initialOffset;
+  const wrapper = (binOrDV, initialOffset = 0, ...args) => {
+    const target = new Class(...args)
+    target._dv = binOrDV instanceof DataView ? binOrDV : new DataView(binOrDV)
+    target._initialOffset = initialOffset
 
     /**
      * Get a single byte (as unsigned integer) from a position
@@ -109,7 +104,8 @@ const withBinary = (Class) => {
      * @return {number} The unsigned numeric value at this byte
      * @this {@link Class} instance
      */
-    target.getByteAt = (offset) => Types.Uint8.get(this._dv, this._initialOffset + offset);
+    target.getByteAt = (offset) =>
+      Types.Uint8.get(this._dv, this._initialOffset + offset)
 
     // This is desirable, but slowers down instantiation time by 4x times
     // Note: `defineProperties` is +0,25 slower
@@ -129,8 +125,8 @@ const withBinary = (Class) => {
         value: initialOffset,
       });
     */
-    return target;
-  };
+    return target
+  }
 
   /**
    * Allow getting the class size from outside
@@ -140,10 +136,12 @@ const withBinary = (Class) => {
    * @name binarySize
    */
   Object.defineProperty(wrapper, 'binarySize', {
-    get() { return Class._size },
+    get () {
+      return Class._size
+    },
     configurable: false,
-    enumerable: false,
-  });
+    enumerable: false
+  })
 
   /**
    * Allow getting the class binary props from outside
@@ -153,10 +151,12 @@ const withBinary = (Class) => {
    * @name binarySize
    */
   Object.defineProperty(wrapper, 'binaryProps', {
-    get() { return Class._binaryProps },
+    get () {
+      return Class._binaryProps
+    },
     configurable: false,
-    enumerable: false,
-  });
+    enumerable: false
+  })
 
   /**
    * Array creator helper
@@ -169,20 +169,26 @@ const withBinary = (Class) => {
    * @static
    * @method
    */
-  wrapper.arrayFactory = function(binOrDV, length, initialOffset=0, list=[]) {
+  wrapper.arrayFactory = function (
+    binOrDV,
+    length,
+    initialOffset = 0,
+    list = []
+  ) {
     // Optimize: Generate a single DataView for all elements
-    const dv = binOrDV instanceof DataView
-      ? binOrDV
-      : new DataView(binOrDV, initialOffset, length * Class._size)
+    const dv =
+      binOrDV instanceof DataView
+        ? binOrDV
+        : new DataView(binOrDV, initialOffset, length * Class._size)
 
-    for(let i = 0; i < length; i++) {
-      list.push(wrapper(dv, initialOffset + Class._size * i));
+    for (let i = 0; i < length; i++) {
+      list.push(wrapper(dv, initialOffset + Class._size * i))
     }
 
     return list
   }
 
-  return wrapper;
+  return wrapper
 }
 
-export {withBinary, binary};
+export { withBinary, binary }
