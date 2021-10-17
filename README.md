@@ -1,5 +1,6 @@
 ![Coverage](https://raw.githubusercontent.com/emibcn/binary-object/badges/main/test-coverage.svg)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
+[![DeepSource](https://deepsource.io/gh/emibcn/binary-object.svg/?label=active+issues&show_trend=true&token=A5qLC8ie8rosf2uYf1MoGMRy)](https://deepsource.io/gh/emibcn/binary-object/?ref=repository-badge)
 
 # Binary Object
 
