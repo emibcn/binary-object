@@ -29,7 +29,7 @@ jobs:
       coverage-rounded-display: ${{ steps.coverage.outputs.coverage-rounded-display }}
 
     steps:
-    - uses: actions/checkout@v2.4.0
+    - uses: actions/checkout@v3
     - uses: actions/setup-node@v3.0.0
       with:
         node-version: ${{ matrix.node }}
@@ -90,7 +90,7 @@ jobs:
         echo "##[set-output name=branch;]$(echo ${EXPORT_VALUE})"
       id: extract_branch
 
-    - uses: actions/checkout@v2.4.0
+    - uses: actions/checkout@v3
       with:
         ref: badges
 
@@ -135,7 +135,7 @@ jobs:
   test-build:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@v3
       - uses: actions/setup-node@v3.0.0
         with:
           node-version: 14.x
@@ -162,7 +162,7 @@ jobs:
     needs: [test, test-build]
     if: ${{ ( github.event_name == 'pull_request' && github.event.pull_request.merged == true ) || github.ref == 'refs/heads/main' }}
     steps:
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@v3
       - uses: actions/setup-node@v3.0.0
         with:
           node-version: 14.x
