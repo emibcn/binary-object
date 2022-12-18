@@ -87,7 +87,7 @@ jobs:
         else
             EXPORT_VALUE="${TMP_GITHUB_REF}"
         fi
-        echo "##[set-output name=branch;]$(echo ${EXPORT_VALUE})"
+        echo "branch=${EXPORT_VALUE}" >> "${GITHUB_OUTPUT}"
       id: extract_branch
 
     - uses: actions/checkout@v3
