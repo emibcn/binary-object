@@ -400,7 +400,7 @@ test("Instantiate an object with a binary data using an initial offset > 0", () 
 
   const expectedValues = [1, 2, 3];
   const values = expectedValues.map((_, index) =>
-    initialsDV.getInt32(index * 4)
+    initialsDV.getInt32(index * 4),
   );
   expect(values).toEqual(expectedValues);
 });
@@ -497,7 +497,7 @@ test("Profile a natural object against a binary object", async () => {
 
       await testProfile(`${name} modification array element 2nd phase`, () => {
         objList.forEach(
-          ({ testFloatArray }, id) => (testFloatArray[0] = id * 2)
+          ({ testFloatArray }, id) => (testFloatArray[0] = id * 2),
         );
       });
     }
@@ -543,13 +543,13 @@ test("Profile a natural object against a binary object", async () => {
     () => {
       binTest3 = new ArrayBuffer(BinaryTest.binarySize * iterations);
       dv3 = new DataView(binTest3);
-    }
+    },
   );
   await testProfile(
     "Binary Object with pre-created DataView instantation",
     () => {
       bDvObjList = BinaryTest.arrayFactory(dv3, iterations);
-    }
+    },
   );
 
   await testObjList("Binary Object with pre-created DataView", bDvObjList);
@@ -591,7 +591,7 @@ test("Profile a natural object against a binary object", async () => {
     }
 
     const binTest2 = new ArrayBuffer(
-      BinaryWithoutArrayTest.binarySize * iterations
+      BinaryWithoutArrayTest.binarySize * iterations,
     );
     bwoaObjList = BinaryWithoutArrayTest.arrayFactory(binTest2, iterations);
   });
@@ -616,7 +616,7 @@ test("Profile a natural object against a binary object", async () => {
     }
 
     const binTest2 = new ArrayBuffer(
-      BinaryObjectWithDecorator.binarySize * iterations
+      BinaryObjectWithDecorator.binarySize * iterations,
     );
     bdObjList = BinaryObjectWithDecorator.arrayFactory(binTest2, iterations);
   });
@@ -643,15 +643,15 @@ test("Profile a natural object against a binary object", async () => {
       }
 
       const binTest2 = new ArrayBuffer(
-        BinaryObjectWithDecorator.binarySize * iterations
+        BinaryObjectWithDecorator.binarySize * iterations,
       );
       bdpObjList = BinaryObjectWithDecorator.arrayFactory(binTest2, iterations);
-    }
+    },
   );
 
   await testObjList(
     "Binary Object with class decorator and padded array",
-    bdpObjList
+    bdpObjList,
   );
 
   // Show collected metrics in a table
@@ -672,7 +672,7 @@ test("Profile a natural object against a binary object", async () => {
             ...acc,
             [key]: numberWithCommas(value),
           }),
-          {}
+          {},
         ),
     }))
     .reduce(
@@ -680,7 +680,7 @@ test("Profile a natural object against a binary object", async () => {
         ...acc,
         [name]: rest,
       }),
-      {}
+      {},
     );
   console.table(memoryDiffTable);
 }, 6e4);

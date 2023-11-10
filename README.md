@@ -81,7 +81,7 @@ class MyBinaryClass extends Binary {
 Object.defineProperty(
   MyBinaryClass.prototype,
   "someMember",
-  binary(Types.Float32)
+  binary(Types.Float32),
 );
 ```
 
