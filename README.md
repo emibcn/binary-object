@@ -304,7 +304,7 @@ This library does not aims to own the memory, allowing to use it in different wa
 be consumed using `ArrayBuffer` or `SharedBuffer`. It's recommended to wrap this library with the one managing the memory.
 
 **Note:** Opting in into managing your own memory (as in C) requires you to understand what you are doing at a low level. Things like dynamic array sizes or text manipulation can be a pain if you don't
-understand the basics (not to say about endianness or memory padding). There are several standards and known ways to manage the memroy. This library aims to make it much easier to parse it (read and write),
+understand the basics (not to say about endianness or memory padding). There are several standards and known ways to manage the memory. This library aims to make it much easier to parse it (read and write),
 but you'll still need to know how it works. Specifically, this libs does not aims to own the memory pieces: you'll need to create/allocate/move/copy/reallocate/free them around instantiating the JS binary objects.
 
 ## Use cases
