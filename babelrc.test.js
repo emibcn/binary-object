@@ -1,18 +1,18 @@
 module.exports = {
-  presets: [['@babel/preset-env', { targets: { node: 'current' } }]],
+  presets: [["@babel/preset-env", { targets: { node: "current" } }]],
   plugins: [
-    '@babel/plugin-transform-runtime',
+    "@babel/plugin-transform-runtime",
     [
-      '@babel/plugin-proposal-decorators',
+      "@babel/plugin-proposal-decorators",
       {
-        legacy: true
-      }
+        legacy: true,
+      },
     ],
     [
-      '@babel/plugin-proposal-class-properties',
+      "@babel/plugin-proposal-class-properties",
       {
-        loose: true
-      }
-    ]
-  ]
-}
+        loose: true,
+      },
+    ],
+  ],
+};
